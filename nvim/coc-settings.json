@@ -11,6 +11,8 @@
   "suggest.noselect": false,
   "python.formatting.provider": "black",
   "typescript.showUnused": false,
+  "typescript.suggest.autoImports": false,
+  "typescript.suggest.completeFunctionCalls": false,
   "languageserver": {
     "ccls": {
       "command": "ccls",
