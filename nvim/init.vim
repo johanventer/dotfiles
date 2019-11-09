@@ -17,8 +17,8 @@ Plug 'qpkorr/vim-bufkill'
 Plug 'sheerun/vim-polyglot'
 
 " Auto pairs
-Plug 'jiangmiao/auto-pairs'
-let g:AutoPairsMultilineClose = 0
+" Plug 'jiangmiao/auto-pairs'
+" let g:AutoPairsMultilineClose = 0
 
 " Detect indents
 Plug 'ciaranm/detectindent'
@@ -33,21 +33,22 @@ Plug 'tpope/vim-commentary'
 " Fuzzy finder
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --bin' }
 Plug 'junegunn/fzf.vim'
-command! -bang -nargs=* Ag call fzf#vim#ag(<q-args>, '--hidden --literal', <bang>0) 
+command! -bang -nargs=* Ag call fzf#vim#ag(<q-args>, '--hidden --literal --ignore *.test.tsx', <bang>0) 
 
 " Icons for NERDTree
 Plug 'ryanoasis/vim-devicons'
 
 " Airline status line
-Plug 'vim-airline/vim-airline'
 let g:airline_powerline_fonts = 1
 let g:airline#extensions#tabline#enabled = 1
+Plug 'vim-airline/vim-airline'
 
 " Semantic highlighting for c/c++/objc
 Plug 'jackguo380/vim-lsp-cxx-highlight'
 
 " Easy color scheme switching
 Plug 'xolox/vim-misc'
+let g:colorscheme_switcher_define_mappings = 0
 Plug 'xolox/vim-colorscheme-switcher'
 
 " Auto reload files when they change
@@ -95,7 +96,7 @@ set signcolumn=yes                          " Always draw the sign column (gutte
 set ignorecase                              " Ignore search case, needs to be on for smartcase to work
 set smartcase                               " Ignore search case unless there is a capital in the term
 set linespace=3                             " Insert a number of pixels between lines (for underlining)
-set cursorline                              " Highlight the line the cursor is currently on
+"set cursorline                              " Highlight the line the cursor is currently on
 set sessionoptions+=globals                 " Include global variables in sessions saved with mksession
 set clipboard+=unnamedplus                  " Use the system clipboard by default for yank/delete/paste
 set backspace=indent,eol,start              " Allow backspace everywhere
@@ -212,3 +213,7 @@ nnoremap <silent> K :call <SID>show_documentation()<CR>
 " Terminal
 nnoremap <silent> <leader>t :vertical botright Ttoggle<cr><C-w>l
 tnoremap <Esc> <C-\><C-n>
+nnoremap <f5> :vertical botright T clear && ./build.sh<cr>
+
+" Todo 
+nnoremap <leader>` :e ~/Desktop/todo.txt<cr>
