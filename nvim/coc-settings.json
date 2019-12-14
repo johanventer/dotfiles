@@ -6,7 +6,9 @@
     "typescriptreact",
     "javascriptreact",
     "css",
-    "python"
+    "python",
+    "c",
+    "cpp"
   ],
   "suggest.noselect": false,
   "python.formatting.provider": "black",

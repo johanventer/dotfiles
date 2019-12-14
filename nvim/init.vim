@@ -211,9 +211,24 @@ endfunction
 nnoremap <silent> K :call <SID>show_documentation()<CR>
 
 " Terminal
-nnoremap <silent> <leader>t :vertical botright Ttoggle<cr><C-w>l
+nnoremap <silent> <leader>t :botright Ttoggle<cr>
 tnoremap <Esc> <C-\><C-n>
-nnoremap <f5> :vertical botright T clear && ./build.sh<cr>
 
 " Todo 
 nnoremap <leader>` :e ~/Desktop/todo.txt<cr>
+
+" QuickFix 
+autocmd QuickFixCmdPost [^l]* botright cwindow
+autocmd QuickFixCmdPost    l* botright lwindow
+
+" Building (override s:build in project specific stuff)
+function! Build()
+    echoerr "Override s:build() in a project specific .nvimrc"
+endfunction
+command! Build call Build()
+map <f5> :Build<cr>
+map <f4> :cclose<cr>
+
+" Allow local rc files
+set exrc
+set secure
