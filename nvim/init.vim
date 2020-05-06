@@ -1,86 +1,75 @@
+" -------------------------------------------------------------------------------------------------
+" Plugins
+" -------------------------------------------------------------------------------------------------
+
+call plug#begin('~/.local/share/nvim/plugged')
+  Plug 'vim-scripts/restore_view.vim'             " Automatically save/restore file views
+  Plug 'scrooloose/nerdtree'                      " File browser
+  Plug 'qpkorr/vim-bufkill'                       " Better buffer management (don't close windows when deleting buffers)
+  Plug 'sheerun/vim-polyglot'                     " Language packs
+  Plug 'ciaranm/detectindent'                     " Detect indents
+  Plug 'tpope/vim-commentary'                     " Auto commenting
+  Plug 'tpope/vim-fugitive'                       " Git
+  Plug 'junegunn/fzf'                             " Fuzzy finder
+  Plug 'junegunn/fzf.vim'                         " Fuzzy finder vim helpers
+  Plug 'ryanoasis/vim-devicons'                   " Icons for NERDTree
+  Plug 'vim-airline/vim-airline'                  " Airline status line
+  Plug 'jackguo380/vim-lsp-cxx-highlight'         " Semantic highlighting for c/c++/objc
+  Plug 'djoshea/vim-autoread'                     " Auto reload files when they change
+  Plug 'kassio/neoterm'                           " Terminal management
+  Plug 'edkolev/tmuxline.vim'                     " tmux airline
+  Plug 'neoclide/coc.nvim', {'branch': 'release'} " coc intellisense engine
+  
+  " Themes
+  Plug 'vim-airline/vim-airline-themes'
+  Plug 'morhetz/gruvbox'
+  Plug 'rakr/vim-one'
+  Plug 'ayu-theme/ayu-vim'
+  Plug 'danilo-augusto/vim-afterglow'
+  Plug 'rainglow/vim'
+  Plug 'connorholyday/vim-snazzy'
+call plug#end()
+
+" -------------------------------------------------------------------------------------------------
+" Plugin Configuration
+" -------------------------------------------------------------------------------------------------
+
+" NERDTree
+let NERDTreeShowHidden=1                      " Show hidden files in nerdtree
+
+" DetectIndent
+augroup detect_indent
+    autocmd!
+    autocmd BufReadPost * DetectIndent
+augroup end
+
+" FZF
+command! -bang -nargs=* Ag call fzf#vim#ag(<q-args>, '--hidden --literal --ignore node_modules --ignore .git', <bang>0) 
+
+" COC
+let g:coc_global_extensions = [
+            \'coc-highlight', 'coc-tsserver', 'coc-html', 'coc-python', 'coc-css',
+            \'coc-eslint', 'coc-prettier', 'coc-json', 'coc-java',
+            \'coc-actions', 'coc-yaml']
+augroup custom_coc
+    autocmd!
+    autocmd FileType python let b:coc_root_patterns = ['.pylintrc', 'requirements.txt']
+    autocmd FileType typescript.tsx,typescript,javascript,javascript.tsx let b:coc_root_patterns = ['package.json']
+    autocmd CursorHold * silent call CocActionAsync('highlight')
+augroup end
+
+" Airline
+let g:airline_powerline_fonts = 1
+let g:airline#extensions#tabline#enabled = 0
+
+" -------------------------------------------------------------------------------------------------
+" Basics
+" -------------------------------------------------------------------------------------------------
+
 " Source config when saved
 let g:vimrc_path = expand('<sfile>:p')
 execute "autocmd! BufWritePost" g:vimrc_path "source" g:vimrc_path
 
-call plug#begin('~/.local/share/nvim/plugged')
-
-" Automatically save/restore file views
-Plug 'vim-scripts/restore_view.vim'
-
-" File browser
-Plug 'scrooloose/nerdtree'
-
-" Better buffer management (don't close windows when deleting buffers)
-Plug 'qpkorr/vim-bufkill'
-
-" Language packs
-Plug 'sheerun/vim-polyglot'
-
-" Auto pairs
-" Plug 'jiangmiao/auto-pairs'
-" let g:AutoPairsMultilineClose = 0
-
-" Detect indents
-Plug 'ciaranm/detectindent'
-augroup detect_indent
-    autocmd!
-    autocmd BufReadPost * :DetectIndent
-augroup end
-
-" Auto commenting
-Plug 'tpope/vim-commentary'
-
-" Fuzzy finder
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --bin' }
-Plug 'junegunn/fzf.vim'
-command! -bang -nargs=* Ag call fzf#vim#ag(<q-args>, '--hidden --literal --ignore *.test.tsx', <bang>0) 
-
-" Icons for NERDTree
-Plug 'ryanoasis/vim-devicons'
-
-" Airline status line
-let g:airline_powerline_fonts = 1
-let g:airline#extensions#tabline#enabled = 1
-Plug 'vim-airline/vim-airline'
-
-" Semantic highlighting for c/c++/objc
-Plug 'jackguo380/vim-lsp-cxx-highlight'
-
-" Easy color scheme switching
-Plug 'xolox/vim-misc'
-let g:colorscheme_switcher_define_mappings = 0
-Plug 'xolox/vim-colorscheme-switcher'
-
-" Auto reload files when they change
-Plug 'djoshea/vim-autoread'
-
-" Terminal management
-Plug 'kassio/neoterm'
-
-" coc intellisense engine
-let g:coc_global_extensions = [
-            \'coc-highlight', 'coc-tsserver', 'coc-html', 'coc-python', 'coc-css',
-            \'coc-eslint', 'coc-prettier', 'coc-json', 'coc-java'
-            \]
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
-augroup custom_coc
-    autocmd!
-    autocmd FileType python let b:coc_root_patterns = ['.pylintrc', 'requirements.txt']
-    autocmd FileType typescript.tsx let b:coc_root_patterns = ['package.json']
-    autocmd CursorHold * silent call CocActionAsync('highlight')
-augroup end
-
-" Themes
-Plug 'vim-airline/vim-airline-themes'
-Plug 'morhetz/gruvbox'
-Plug 'rakr/vim-one'
-Plug 'ayu-theme/ayu-vim'
-Plug 'danilo-augusto/vim-afterglow'
-Plug 'rainglow/vim'
-
-call plug#end()
-
-" Basics
 set termguicolors                           " Enable 24bit color  
 set nowrap                                  " Disable wrapping by default
 set hidden                                  " Allow hidden buffers
@@ -96,13 +85,14 @@ set signcolumn=yes                          " Always draw the sign column (gutte
 set ignorecase                              " Ignore search case, needs to be on for smartcase to work
 set smartcase                               " Ignore search case unless there is a capital in the term
 set linespace=3                             " Insert a number of pixels between lines (for underlining)
-"set cursorline                              " Highlight the line the cursor is currently on
+set cursorline                              " Highlight the line the cursor is currently on
 set sessionoptions+=globals                 " Include global variables in sessions saved with mksession
 set clipboard+=unnamedplus                  " Use the system clipboard by default for yank/delete/paste
 set backspace=indent,eol,start              " Allow backspace everywhere
 
 " Colors
-let g:airline_theme='ayu_dark'
+let g:airline_theme='ayu'
+let ayucolor="mirage"
 colorscheme ayu
 let g:terminal_color_0  = '#2e3436'
 let g:terminal_color_1  = '#cc0000'
@@ -121,53 +111,59 @@ let g:terminal_color_13 = '#ad7fa8'
 let g:terminal_color_14 = '#00f5e9'
 let g:terminal_color_15 = '#eeeeec'
 
-""
-"" Mappings
-"" 
+" -------------------------------------------------------------------------------------------------
+" Key Mappins
+" -------------------------------------------------------------------------------------------------
 
-" Open folds with space
-nnoremap <space> za
+let mapleader=' '                        
 
-" Leader key
-let mapleader=','
+" Edit vimrc
+nnoremap <leader>v :execute "vsplit" g:vimrc_path<cr> 
 
-" Alternative ESC
-inoremap <leader>, <ESC>
-vnoremap <leader>, <ESC>
-
-" Buffer stuff
-nnoremap <C-q> :BD<cr>
-nnoremap <C-s> :w<cr>
-
-" Open NERDTree
+" Toggle file browser
 nnoremap <leader>b :NERDTreeToggle<CR>
+
+" Find current file in file browser
 nnoremap <leader>B :NERDTreeFind<CR>
 
-" Open init.vim
-nnoremap <leader>v :execute "vsplit" g:vimrc_path<cr>
-
-" Split the file vertically
+" Split vertically
 nnoremap <leader>\ :vsplit<cr> :wincmd l<cr>
 
-" Comment with <leader>/
-nmap <leader>/ gcc
-vmap <leader>/ gc
+" Split horizontally
+nnoremap <leader>% :split<cr> :wincmd j<cr>
+
+" Buffers
+nnoremap <f1> :Buffers<cr>
 
 " Find in project
-nmap <leader>f :Ag<space>
+nnoremap <leader>f :Ag<space>
+nnoremap <f3> :Ag<space>
 
-" Switch buffers
-nmap <leader>[ :bprev<cr>
-nmap <leader>] :bnext<cr>
-nmap <a-pageup> :bprev<cr>
-nmap <a-pagedown> :bnext<cr>
+" Auto commenting
+nnoremap <leader>/ gcc 
+vnoremap <leader>/ gc
 
-" Navigate quickfix
-nmap <f9> :cn<cr>
-nmap <F21> :cprev<cr>
+" Format file
+nnoremap <leader>" :Format<cr>
 
-" Run fzf for ctrl-p
-nnoremap <C-p> :Files<CR>
+" Delete buffer
+nnoremap <C-q>     :BD<cr> 
+
+" Write
+nnoremap <C-s>     :w<cr>
+
+" Navigate quickfile
+nnoremap <f9>      :cn<cr>
+nnoremap <F21>     :cprev<cr>
+
+" Ctrl-p fuzzy file finder
+nnoremap <C-p>     :Files<CR>
+
+" Window navigation
+nnoremap <C-S-Left>   <C-w>h
+nnoremap <C-S-Right>  <C-w>l
+nnoremap <C-S-Up>     <C-w>k
+nnoremap <C-S-Down>   <C-w>j
 
 " coc completion with TAB
 function! s:check_back_space() abort
@@ -184,21 +180,26 @@ inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
 inoremap <silent><expr> <c-space> coc#refresh()
 
 " coc confirm completion
-inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
+if has('patch8.1.1068')
+  " Use `complete_info` if your (Neo)Vim version supports it.
+  inoremap <expr> <cr> complete_info()["selected"] != "-1" ? "\<C-y>" : "\<C-g>u\<CR>"
+else
+  imap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
+endif
 
 " coc mappings
-nmap <silent> [c <Plug>(coc-diagnostic-prev)
-nmap <silent> ]c <Plug>(coc-diagnostic-next)
-nmap <silent> <f8> <Plug>(coc-diagnostic-next)
-nmap <silent> <f9> :cnext<cr>
-nmap <silent> <F20> <Plug>(coc-diagnostic-prev)
-nmap <silent> gd <Plug>(coc-definition)
-nmap <silent> <f12> <Plug>(coc-definition)
-nmap <silent> gy <Plug>(coc-type-definition)
-nmap <silent> gi <Plug>(coc-implementation)
-nmap <silent> gr <Plug>(coc-references)
-nmap <leader>rn <Plug>(coc-rename)
-nmap <f2> <Plug>(coc-rename)
+nnoremap <silent> [c    <Plug>(coc-diagnostic-prev)
+nnoremap <silent> ]c    <Plug>(coc-diagnostic-next)
+nnoremap <silent> <f8>  <Plug>(coc-diagnostic-next)
+nnoremap <silent> <f9>  :cnext<cr>
+nnoremap <silent> <F20> <Plug>(coc-diagnostic-prev)
+nnoremap <silent> gd    <Plug>(coc-definition)
+nnoremap <silent> <f12> <Plug>(coc-definition)
+nnoremap <silent> gy    <Plug>(coc-type-definition)
+nnoremap <silent> gi    <Plug>(coc-implementation)
+nnoremap <silent> gr    <Plug>(coc-references)
+nnoremap <leader>rn     <Plug>(coc-rename)
+nnoremap <f2>           <Plug>(coc-rename)
 nnoremap <silent> <leader>a  :<C-u>CocList diagnostics<cr>
 nnoremap <silent> <leader>s  :CocList -I symbols<cr>
 function! s:show_documentation()
@@ -209,6 +210,10 @@ function! s:show_documentation()
   endif
 endfunction
 nnoremap <silent> K :call <SID>show_documentation()<CR>
+
+command! -nargs=0 Format :call CocAction('format')
+command! -nargs=? Fold   :call CocAction('fold', <f-args>)
+command! -nargs=0 OR     :call CocAction('runCommand', 'editor.action.organizeImport')
 
 " Terminal
 nnoremap <silent> <leader>t :botright Ttoggle<cr>
