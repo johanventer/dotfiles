@@ -50,7 +50,7 @@ command! -bang -nargs=* Ag call fzf#vim#ag(<q-args>, '--hidden --literal --ignor
 let g:coc_global_extensions = [
             \'coc-highlight', 'coc-tsserver', 'coc-html', 'coc-python', 'coc-css',
             \'coc-eslint', 'coc-prettier', 'coc-json', 'coc-java',
-            \'coc-actions', 'coc-yaml']
+            \'coc-actions', 'coc-yaml', 'coc-rls']
 augroup custom_coc
     autocmd!
     autocmd FileType python let b:coc_root_patterns = ['.pylintrc', 'requirements.txt']
@@ -61,6 +61,9 @@ augroup end
 " Airline
 let g:airline_powerline_fonts = 1
 let g:airline#extensions#tabline#enabled = 0
+
+" NeoTerm
+let g:neoterm_autoinsert = 1
 
 " -------------------------------------------------------------------------------------------------
 " Basics
@@ -119,6 +122,9 @@ let mapleader=' '
 
 " Edit vimrc
 nnoremap <leader>v :execute "vsplit" g:vimrc_path<cr> 
+
+" Toggle terminal
+nnoremap ` :Ttoggle<cr>
 
 " Toggle file browser
 nnoremap <leader>b :NERDTreeToggle<CR>
@@ -228,7 +234,7 @@ autocmd QuickFixCmdPost    l* botright lwindow
 
 " Building (override s:build in project specific stuff)
 function! Build()
-    echoerr "Override s:build() in a project specific .nvimrc"
+    echoerr "Override Build() in a project specific .nvimrc"
 endfunction
 command! Build call Build()
 map <f5> :Build<cr>
