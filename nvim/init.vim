@@ -3,7 +3,6 @@
 " -------------------------------------------------------------------------------------------------
 
 call plug#begin('~/.local/share/nvim/plugged')
-  Plug 'vim-scripts/restore_view.vim'             " Automatically save/restore file views
   Plug 'scrooloose/nerdtree'                      " File browser
   Plug 'qpkorr/vim-bufkill'                       " Better buffer management (don't close windows when deleting buffers)
   Plug 'sheerun/vim-polyglot'                     " Language packs
@@ -18,7 +17,7 @@ call plug#begin('~/.local/share/nvim/plugged')
   Plug 'djoshea/vim-autoread'                     " Auto reload files when they change
   Plug 'kassio/neoterm'                           " Terminal management
   Plug 'edkolev/tmuxline.vim'                     " tmux airline
-  Plug 'neoclide/coc.nvim', {'branch': 'release'} " coc intellisense engine
+  Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}  " coc intellisense engine
   
   " Themes
   Plug 'vim-airline/vim-airline-themes'
@@ -33,6 +32,11 @@ call plug#end()
 " -------------------------------------------------------------------------------------------------
 " Plugin Configuration
 " -------------------------------------------------------------------------------------------------
+
+" neoterm
+let g:neoterm_default_mode = "botright"
+let g:neoterm_size = 15
+let g:neoterm_autoscroll = 1
 
 " NERDTree
 let NERDTreeShowHidden=1                      " Show hidden files in nerdtree
@@ -61,9 +65,6 @@ augroup end
 " Airline
 let g:airline_powerline_fonts = 1
 let g:airline#extensions#tabline#enabled = 0
-
-" NeoTerm
-let g:neoterm_autoinsert = 1
 
 " -------------------------------------------------------------------------------------------------
 " Basics
@@ -182,9 +183,6 @@ inoremap <silent><expr> <TAB>
       \ coc#refresh()
 inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
 
-" coc completion with ctrl-space
-inoremap <silent><expr> <c-space> coc#refresh()
-
 " coc confirm completion
 if has('patch8.1.1068')
   " Use `complete_info` if your (Neo)Vim version supports it.
@@ -234,7 +232,18 @@ autocmd QuickFixCmdPost    l* botright lwindow
 
 " Building (override s:build in project specific stuff)
 function! Build()
-    echoerr "Override Build() in a project specific .nvimrc"
+    if !exists("g:build_cmd")
+        echoerr "Set g:build_cmd with the command you want to run"
+        return
+    endif
+    " Kill any running process in the terminal
+	:Tkill
+    " Clear the terminal and any scrollback
+	:Tclear!
+    " Open the terminal
+	:Topen
+    " Run the build command
+    execute ":T ". g:build_cmd
 endfunction
 command! Build call Build()
 map <f5> :Build<cr>
