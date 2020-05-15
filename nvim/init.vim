@@ -17,7 +17,7 @@ call plug#begin('~/.local/share/nvim/plugged')
   Plug 'djoshea/vim-autoread'                     " Auto reload files when they change
   Plug 'kassio/neoterm'                           " Terminal management
   Plug 'edkolev/tmuxline.vim'                     " tmux airline
-  Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}  " coc intellisense engine
+  Plug 'neoclide/coc.nvim', {'branch': 'release'} " coc intellisense engine
   
   " Themes
   Plug 'vim-airline/vim-airline-themes'
@@ -34,7 +34,7 @@ call plug#end()
 " -------------------------------------------------------------------------------------------------
 
 " neoterm
-let g:neoterm_default_mode = "botright"
+let g:neoterm_default_mod = "botright"
 let g:neoterm_size = 15
 let g:neoterm_autoscroll = 1
 
