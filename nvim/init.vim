@@ -33,6 +33,9 @@ call plug#end()
 " Plugin Configuration
 " -------------------------------------------------------------------------------------------------
 
+" vim-commentary
+autocmd FileType rust setlocal commentstring=//\ %s
+
 " neoterm
 let g:neoterm_default_mod = "botright"
 let g:neoterm_size = 15
@@ -147,8 +150,8 @@ nnoremap <leader>f :Ag<space>
 nnoremap <f3> :Ag<space>
 
 " Auto commenting
-nnoremap <leader>/ gcc 
-vnoremap <leader>/ gc
+nmap <leader>/ gcc
+vmap <leader>/ gc
 
 " Format file
 nnoremap <leader>" :Format<cr>
