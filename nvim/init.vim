@@ -125,55 +125,56 @@ let g:terminal_color_15 = '#eeeeec'
 let mapleader=' '                        
 
 " Edit vimrc
-nnoremap <leader>v :execute "vsplit" g:vimrc_path<cr> 
+nmap <leader>v :execute "vsplit" g:vimrc_path<cr> 
 
 " Toggle terminal
-nnoremap ` :Ttoggle<cr>
+nmap ` :Ttoggle<cr>
 
 " Toggle file browser
-nnoremap <leader>b :NERDTreeToggle<CR>
+nmap <leader>b :NERDTreeToggle<CR>
 
 " Find current file in file browser
-nnoremap <leader>B :NERDTreeFind<CR>
+nmap <leader>B :NERDTreeFind<CR>
 
 " Split vertically
-nnoremap <leader>\ :vsplit<cr> :wincmd l<cr>
+nmap <leader>\ :vsplit<cr> :wincmd l<cr>
 
 " Split horizontally
-nnoremap <leader>% :split<cr> :wincmd j<cr>
+nmap <leader>% :split<cr> :wincmd j<cr>
 
 " Buffers
-nnoremap <f1> :Buffers<cr>
+nmap <f1> :Buffers<cr>
 
 " Find in project
-nnoremap <leader>f :Ag<space>
-nnoremap <f3> :Ag<space>
+nmap <leader>f :Ag<space>
+nmap <f3> :Ag<space>
+nmap <leader>F :Ag <C-R><C-W><CR>
 
 " Auto commenting
 nmap <leader>/ gcc
 vmap <leader>/ gc
 
 " Format file
-nnoremap <leader>" :Format<cr>
+nmap <leader>" :Format<cr>
 
 " Delete buffer
-nnoremap <C-q>     :BD<cr> 
+nmap <C-q>     :BD<cr> 
 
 " Write
-nnoremap <C-s>     :w<cr>
+nmap <C-s>     :w<cr>
 
 " Navigate quickfile
-nnoremap <f9>      :cn<cr>
-nnoremap <F21>     :cprev<cr>
+nmap <f9>      :cn<cr>
+nmap <F21>     :cprev<cr>
 
 " Ctrl-p fuzzy file finder
-nnoremap <C-p>     :Files<CR>
+nmap <C-p>     :Files<CR>
 
 " Window navigation
-nnoremap <C-S-Left>   <C-w>h
-nnoremap <C-S-Right>  <C-w>l
-nnoremap <C-S-Up>     <C-w>k
-nnoremap <C-S-Down>   <C-w>j
+nmap <C-S-Left>   <C-w>h
+nmap <C-S-Right>  <C-w>l
+nmap <C-S-Up>     <C-w>k
+nmap <C-S-Down>   <C-w>j
 
 " coc completion with TAB
 function! s:check_back_space() abort
@@ -195,20 +196,20 @@ else
 endif
 
 " coc mappings
-nnoremap <silent> [c    <Plug>(coc-diagnostic-prev)
-nnoremap <silent> ]c    <Plug>(coc-diagnostic-next)
-nnoremap <silent> <f8>  <Plug>(coc-diagnostic-next)
-nnoremap <silent> <f9>  :cnext<cr>
-nnoremap <silent> <F20> <Plug>(coc-diagnostic-prev)
-nnoremap <silent> gd    <Plug>(coc-definition)
-nnoremap <silent> <f12> <Plug>(coc-definition)
-nnoremap <silent> gy    <Plug>(coc-type-definition)
-nnoremap <silent> gi    <Plug>(coc-implementation)
-nnoremap <silent> gr    <Plug>(coc-references)
-nnoremap <leader>rn     <Plug>(coc-rename)
-nnoremap <f2>           <Plug>(coc-rename)
-nnoremap <silent> <leader>a  :<C-u>CocList diagnostics<cr>
-nnoremap <silent> <leader>s  :CocList -I symbols<cr>
+nmap <silent> [c    <Plug>(coc-diagnostic-prev)
+nmap <silent> ]c    <Plug>(coc-diagnostic-next)
+nmap <silent> <f8>  <Plug>(coc-diagnostic-next)
+nmap <silent> <f9>  :cnext<cr>
+nmap <silent> <F20> <Plug>(coc-diagnostic-prev)
+nmap <silent> gd    <Plug>(coc-definition)
+nmap <silent> <f12> <Plug>(coc-definition)
+nmap <silent> gy    <Plug>(coc-type-definition)
+nmap <silent> gi    <Plug>(coc-implementation)
+nmap <silent> gr    <Plug>(coc-references)
+nmap <leader>rn     <Plug>(coc-rename)
+nmap <f2>           <Plug>(coc-rename)
+nmap <silent> <leader>a  :<C-u>CocList diagnostics<cr>
+nmap <silent> <leader>s  :CocList -I symbols<cr>
 function! s:show_documentation()
   if (index(['vim','help'], &filetype) >= 0)
     execute 'h '.expand('<cword>')
@@ -216,18 +217,18 @@ function! s:show_documentation()
     call CocAction('doHover')
   endif
 endfunction
-nnoremap <silent> K :call <SID>show_documentation()<CR>
+nmap <silent> K :call <SID>show_documentation()<CR>
 
 command! -nargs=0 Format :call CocAction('format')
 command! -nargs=? Fold   :call CocAction('fold', <f-args>)
 command! -nargs=0 OR     :call CocAction('runCommand', 'editor.action.organizeImport')
 
 " Terminal
-nnoremap <silent> <leader>t :botright Ttoggle<cr>
-tnoremap <Esc> <C-\><C-n>
+nmap <silent> <leader>t :botright Ttoggle<cr>
+tmap <Esc> <C-\><C-n>
 
 " Todo 
-nnoremap <leader>` :e ~/Desktop/todo.txt<cr>
+nmap <leader>` :e ~/Desktop/todo.txt<cr>
 
 " QuickFix 
 autocmd QuickFixCmdPost [^l]* botright cwindow
