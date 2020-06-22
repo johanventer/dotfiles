@@ -38,5 +38,7 @@
       "typescriptreact"
   ],
   "java.errors.incompleteClasspath.severity": "ignore",
-  "rust.clippy_preference": "on"
+  "rust.clippy_preference": "on",
+  "rust.racer_completion": true,
+  "java.format.settings.url": "/home/johan/.config/coc/extensions/node_modules/redhat.java/eclipse-formatter.xml"
 }

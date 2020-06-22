@@ -17,7 +17,7 @@ call plug#begin('~/.local/share/nvim/plugged')
   Plug 'djoshea/vim-autoread'                     " Auto reload files when they change
   Plug 'kassio/neoterm'                           " Terminal management
   Plug 'edkolev/tmuxline.vim'                     " tmux airline
-  Plug 'neoclide/coc.nvim', { 'branch': 'release' } " coc intellisense engine
+  Plug 'neoclide/coc.nvim', {'branch': 'release'} " coc intellisense engine
   
   " Themes
   Plug 'vim-airline/vim-airline-themes'
@@ -32,6 +32,9 @@ call plug#end()
 " -------------------------------------------------------------------------------------------------
 " Plugin Configuration
 " -------------------------------------------------------------------------------------------------
+
+" vim-commentary
+autocmd FileType rust setlocal commentstring=//\ %s
 
 " neoterm
 let g:neoterm_default_mod = "botright"
@@ -146,9 +149,10 @@ nmap <f1> :Buffers<cr>
 " Find in project
 nmap <leader>f :Ag<space>
 nmap <f3> :Ag<space>
+nmap <leader>F :Ag <C-R><C-W><CR>
 
 " Auto commenting
-nmap <leader>/ gcc 
+nmap <leader>/ gcc
 vmap <leader>/ gc
 
 " Format file
@@ -221,11 +225,11 @@ command! -nargs=? Fold   :call CocAction('fold', <f-args>)
 command! -nargs=0 OR     :call CocAction('runCommand', 'editor.action.organizeImport')
 
 " Terminal
-nnoremap <silent> <leader>t :botright Ttoggle<cr>
-tnoremap <Esc> <C-\><C-n>
+nmap <silent> <leader>t :botright Ttoggle<cr>
+tmap <Esc> <C-\><C-n>
 
 " Todo 
-nnoremap <leader>` :e ~/Desktop/todo.txt<cr>
+nmap <leader>` :e ~/Desktop/todo.txt<cr>
 
 " QuickFix 
 autocmd QuickFixCmdPost [^l]* botright cwindow
