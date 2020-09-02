@@ -11,7 +11,7 @@ call plug#begin('~/.local/share/nvim/plugged')
   Plug 'junegunn/fzf'                             " Fuzzy finder
   Plug 'junegunn/fzf.vim'                         " Fuzzy finder vim helpers
   Plug 'ryanoasis/vim-devicons'                   " Icons for NERDTree
-  Plug 'vim-airline/vim-airline'                  " Airline status line
+"  Plug 'vim-airline/vim-airline'                  " Airline status line
   Plug 'jackguo380/vim-lsp-cxx-highlight'         " Semantic highlighting for c/c++/objc
   Plug 'djoshea/vim-autoread'                     " Auto reload files when they change
   Plug 'kassio/neoterm'                           " Terminal management
@@ -62,13 +62,14 @@ augroup detect_indent
 augroup end
 
 " FZF
-command! -bang -nargs=* Ag call fzf#vim#ag(<q-args>, '--hidden --literal --ignore node_modules --ignore .git', <bang>0) 
+command! -bang -nargs=* Ag call fzf#vim#ag(<q-args>, '--hidden --literal --ignore node_modules --ignore .git --ignore target', <bang>0) 
 
 " COC
 let g:coc_global_extensions = [
             \'coc-highlight', 'coc-tsserver', 'coc-html', 'coc-python', 'coc-css',
             \'coc-eslint', 'coc-prettier', 'coc-json', 'coc-java',
             \'coc-actions', 'coc-yaml', 'coc-rls']
+
 augroup custom_coc
     autocmd!
     autocmd FileType python let b:coc_root_patterns = ['.pylintrc', 'requirements.txt']
