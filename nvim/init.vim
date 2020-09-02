@@ -2,16 +2,22 @@
 " -------------------------------------------------------------------------------------------------
 
 call plug#begin('~/.local/share/nvim/plugged')
+  Plug 'neovim/nvim-lsp'                          " LSP configurations for neovim
+  Plug 'nvim-lua/completion-nvim'                 " Completion engine that support neovim's LSP
+  Plug 'nvim-lua/diagnostic-nvim'                 " Diagnostics with neovim's LSP
+  Plug 'prettier/vim-prettier',                   " Prettier :)
+              \ { 'do': 'yarn install' }
+
   Plug 'scrooloose/nerdtree'                      " File browser
   Plug 'qpkorr/vim-bufkill'                       " Better buffer management (don't close windows when deleting buffers)
   Plug 'sheerun/vim-polyglot'                     " Language packs
   Plug 'ciaranm/detectindent'                     " Detect indents
   Plug 'tpope/vim-commentary'                     " Auto commenting
-  Plug 'tpope/vim-fugitive'                       " Git
+"  Plug 'tpope/vim-fugitive'                       " Git
   Plug 'junegunn/fzf'                             " Fuzzy finder
   Plug 'junegunn/fzf.vim'                         " Fuzzy finder vim helpers
   Plug 'ryanoasis/vim-devicons'                   " Icons for NERDTree
-"  Plug 'vim-airline/vim-airline'                  " Airline status line
+  Plug 'vim-airline/vim-airline'                  " Airline status line
   Plug 'jackguo380/vim-lsp-cxx-highlight'         " Semantic highlighting for c/c++/objc
   Plug 'djoshea/vim-autoread'                     " Auto reload files when they change
   Plug 'kassio/neoterm'                           " Terminal management
@@ -19,7 +25,7 @@ call plug#begin('~/.local/share/nvim/plugged')
   Plug 'uiiaoo/java-syntax.vim'                   " Better Java syntax highlighting
   "Plug 'airblade/vim-gitgutter'
   Plug 'Yggdroot/indentLine'
-  Plug 'neoclide/coc.nvim', {'branch': 'release'} " coc intellisense engine
+  "Plug 'neoclide/coc.nvim', {'branch': 'release'} " coc intellisense engine
   
   " Themes
   Plug 'vim-airline/vim-airline-themes'
@@ -33,8 +39,56 @@ call plug#begin('~/.local/share/nvim/plugged')
 call plug#end()
 
 " -------------------------------------------------------------------------------------------------
+"  LSP/Completion Configuration
+" -------------------------------------------------------------------------------------------------
+
+lua <<EOF
+local on_attach_vim = function()
+  require'completion'.on_attach()
+  require'diagnostic'.on_attach()
+end
+require'nvim_lsp'.tsserver.setup{on_attach=on_attach_vim}
+EOF
+
+set shortmess+=c                            " Avoid displaying insert completion messages
+set completeopt=noinsert,menuone,preview    " Sets the behaviour of the autocompletion menu
+
+function! s:check_back_space() abort
+    let col = col('.') - 1
+    return !col || getline('.')[col - 1]  =~ '\s'
+endfunction
+
+" Use TAB as a completion trigger key
+inoremap <silent><expr> <TAB>
+  \ pumvisible() ? "\<C-n>" :
+  \ <SID>check_back_space() ? "\<TAB>" :
+  \ completion#trigger_completion()
+
+" LSP mappings
+" nnoremap <silent> <f12> <cmd>lua vim.lsp.buf.declaration()<CR>
+nnoremap <silent> <f12> <cmd>lua vim.lsp.buf.definition()<CR>
+nnoremap <silent> K     <cmd>lua vim.lsp.buf.hover()<CR>
+nnoremap <silent> gi    <cmd>lua vim.lsp.buf.implementation()<CR>
+nnoremap <silent> <c-k> <cmd>lua vim.lsp.buf.signature_help()<CR>
+nnoremap <silent> gr    <cmd>lua vim.lsp.buf.references()<CR>
+nnoremap <silent> g0    <cmd>lua vim.lsp.buf.document_symbol()<CR>
+nnoremap <silent> gW    <cmd>lua vim.lsp.buf.workspace_symbol()<CR>
+nnoremap          <f2>  <cmd>lua vim.lsp.buf.rename()<CR>
+nnoremap <silent> <f8>  :PrevDiagnostic
+nnoremap <silent> <f9>  :NextDiagnostic
+
+" -------------------------------------------------------------------------------------------------
 " Plugin Configuration
 " -------------------------------------------------------------------------------------------------
+
+" Prettier
+augroup prettier
+    autocmd!
+    autocmd BufWritePost * PrettierAsync
+augroup end
+let g:prettier#config#print_width = '80'
+let g:prettier#config#tab_width = '2'
+let g:prettier#config#use_tabs = 'false'
 
 " Disable highlighting variables in Java
 highlight link JavaIdentifier NONE
@@ -99,8 +153,6 @@ set ts=4 sts=4 sw=4 expandtab               " Insert spaces for tabs and set the
 set textwidth=119                           " Specifies the width of inserted text
 set cmdheight=1                             " Single line commands
 set updatetime=300                          " Time before writing to swap file (ms)
-set shortmess+=c                            " Avoid displaying insert completion messages
-set completeopt=noinsert,menuone,preview    " Sets the behaviour of the autocompletion menu
 set signcolumn=yes                          " Always draw the sign column (gutter indicators)
 set ignorecase                              " Ignore search case, needs to be on for smartcase to work
 set smartcase                               " Ignore search case unless there is a capital in the term
@@ -136,7 +188,7 @@ colorscheme ayu
 " let g:terminal_color_15 = '#eeeeec'
 
 " -------------------------------------------------------------------------------------------------
-" Key Mappins
+" Key Mappings
 " -------------------------------------------------------------------------------------------------
 
 let mapleader=' '                        
@@ -172,6 +224,7 @@ nmap <leader>/ gcc
 vmap <leader>/ gc
 
 " Format file
+command! -nargs=0 Format :PrettierAsync
 nmap <leader>" :Format<cr>
 
 " Delete buffer
@@ -192,53 +245,6 @@ nmap <C-S-Left>   <C-w>h
 nmap <C-S-Right>  <C-w>l
 nmap <C-S-Up>     <C-w>k
 nmap <C-S-Down>   <C-w>j
-
-" coc completion with TAB
-function! s:check_back_space() abort
-  let col = col('.') - 1
-  return !col || getline('.')[col - 1]  =~# '\s'
-endfunction
-inoremap <silent><expr> <TAB>
-      \ pumvisible() ? "\<C-n>" :
-      \ <SID>check_back_space() ? "\<TAB>" :
-      \ coc#refresh()
-inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
-
-" coc confirm completion
-if has('patch8.1.1068')
-  " Use `complete_info` if your (Neo)Vim version supports it.
-  inoremap <expr> <cr> complete_info()["selected"] != "-1" ? "\<C-y>" : "\<C-g>u\<CR>"
-else
-  imap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
-endif
-
-" coc mappings
-nmap <silent> [c    <Plug>(coc-diagnostic-prev)
-nmap <silent> ]c    <Plug>(coc-diagnostic-next)
-nmap <silent> <f8>  <Plug>(coc-diagnostic-next)
-nmap <silent> <f9>  :cnext<cr>
-nmap <silent> <F20> <Plug>(coc-diagnostic-prev)
-nmap <silent> gd    <Plug>(coc-definition)
-nmap <silent> <f12> <Plug>(coc-definition)
-nmap <silent> gy    <Plug>(coc-type-definition)
-nmap <silent> gi    <Plug>(coc-implementation)
-nmap <silent> gr    <Plug>(coc-references)
-nmap <leader>rn     <Plug>(coc-rename)
-nmap <f2>           <Plug>(coc-rename)
-nmap <silent> <leader>a  :<C-u>CocList diagnostics<cr>
-nmap <silent> <leader>s  :CocList -I symbols<cr>
-function! s:show_documentation()
-  if (index(['vim','help'], &filetype) >= 0)
-    execute 'h '.expand('<cword>')
-  else
-    call CocAction('doHover')
-  endif
-endfunction
-nmap <silent> K :call <SID>show_documentation()<CR>
-
-command! -nargs=0 Format :call CocAction('format')
-command! -nargs=? Fold   :call CocAction('fold', <f-args>)
-command! -nargs=0 OR     :call CocAction('runCommand', 'editor.action.organizeImport')
 
 " Terminal
 nmap <silent> <leader>t :botright Ttoggle<cr>
