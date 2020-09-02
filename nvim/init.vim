@@ -1,4 +1,3 @@
-" -------------------------------------------------------------------------------------------------
 " Plugins
 " -------------------------------------------------------------------------------------------------
 
@@ -17,6 +16,9 @@ call plug#begin('~/.local/share/nvim/plugged')
   Plug 'djoshea/vim-autoread'                     " Auto reload files when they change
   Plug 'kassio/neoterm'                           " Terminal management
   Plug 'edkolev/tmuxline.vim'                     " tmux airline
+  Plug 'uiiaoo/java-syntax.vim'                   " Better Java syntax highlighting
+  "Plug 'airblade/vim-gitgutter'
+  Plug 'Yggdroot/indentLine'
   Plug 'neoclide/coc.nvim', {'branch': 'release'} " coc intellisense engine
   
   " Themes
@@ -24,6 +26,7 @@ call plug#begin('~/.local/share/nvim/plugged')
   Plug 'morhetz/gruvbox'
   Plug 'rakr/vim-one'
   Plug 'ayu-theme/ayu-vim'
+  Plug 'dempfi/vim-airline-neka'
   Plug 'danilo-augusto/vim-afterglow'
   Plug 'rainglow/vim'
   Plug 'connorholyday/vim-snazzy'
@@ -33,8 +36,15 @@ call plug#end()
 " Plugin Configuration
 " -------------------------------------------------------------------------------------------------
 
+" Disable highlighting variables in Java
+highlight link JavaIdentifier NONE
+
 " vim-commentary
 autocmd FileType rust setlocal commentstring=//\ %s
+autocmd FileType javascript setlocal commentstring=//\ %s
+autocmd FileType typescript setlocal commentstring=//\ %s
+autocmd FileType javascriptreact setlocal commentstring=//\ %s
+autocmd FileType typescriptreact setlocal commentstring=//\ %s
 
 " neoterm
 let g:neoterm_default_mod = "botright"
@@ -43,6 +53,7 @@ let g:neoterm_autoscroll = 1
 
 " NERDTree
 let NERDTreeShowHidden=1                      " Show hidden files in nerdtree
+let NERDTreeMinimalUI = 1
 
 " DetectIndent
 augroup detect_indent
@@ -62,12 +73,13 @@ augroup custom_coc
     autocmd!
     autocmd FileType python let b:coc_root_patterns = ['.pylintrc', 'requirements.txt']
     autocmd FileType typescript.tsx,typescript,javascript,javascript.tsx let b:coc_root_patterns = ['package.json']
-    autocmd CursorHold * silent call CocActionAsync('highlight')
+    "autocmd CursorHold * silent call CocActionAsync('highlight')
 augroup end
 
 " Airline
 let g:airline_powerline_fonts = 1
 let g:airline#extensions#tabline#enabled = 0
+let g:airline#extensions#branch#enabled=1
 
 " -------------------------------------------------------------------------------------------------
 " Basics
@@ -94,29 +106,33 @@ set smartcase                               " Ignore search case unless there is
 set linespace=3                             " Insert a number of pixels between lines (for underlining)
 set cursorline                              " Highlight the line the cursor is currently on
 set sessionoptions+=globals                 " Include global variables in sessions saved with mksession
-set clipboard+=unnamedplus                  " Use the system clipboard by default for yank/delete/paste
 set backspace=indent,eol,start              " Allow backspace everywhere
+set clipboard+=unnamedplus                  " Use the system clipboard by default for yank/delete/paste
+
+" Copy into X11 PRIMARY when releasing the mousebutton in visual mode (for copy on select)
+" and stay in visual mode
+:vnoremap <LeftRelease> "*y<LeftRelease>gv
 
 " Colors
-let g:airline_theme='ayu'
 let ayucolor="mirage"
+let g:airline_theme = 'ayu'
 colorscheme ayu
-let g:terminal_color_0  = '#2e3436'
-let g:terminal_color_1  = '#cc0000'
-let g:terminal_color_2  = '#4e9a06'
-let g:terminal_color_3  = '#c4a000'
-let g:terminal_color_4  = '#3465a4'
-let g:terminal_color_5  = '#75507b'
-let g:terminal_color_6  = '#0b939b'
-let g:terminal_color_7  = '#d3d7cf'
-let g:terminal_color_8  = '#555753'
-let g:terminal_color_9  = '#ef2929'
-let g:terminal_color_10 = '#8ae234'
-let g:terminal_color_11 = '#fce94f'
-let g:terminal_color_12 = '#729fcf'
-let g:terminal_color_13 = '#ad7fa8'
-let g:terminal_color_14 = '#00f5e9'
-let g:terminal_color_15 = '#eeeeec'
+" let g:terminal_color_0  = '#2e3436'
+" let g:terminal_color_1  = '#cc0000'
+" let g:terminal_color_2  = '#4e9a06'
+" let g:terminal_color_3  = '#c4a000'
+" let g:terminal_color_4  = '#3465a4'
+" let g:terminal_color_5  = '#75507b'
+" let g:terminal_color_6  = '#0b939b'
+" let g:terminal_color_7  = '#d3d7cf'
+" let g:terminal_color_8  = '#555753'
+" let g:terminal_color_9  = '#ef2929'
+" let g:terminal_color_10 = '#8ae234'
+" let g:terminal_color_11 = '#fce94f'
+" let g:terminal_color_12 = '#729fcf'
+" let g:terminal_color_13 = '#ad7fa8'
+" let g:terminal_color_14 = '#00f5e9'
+" let g:terminal_color_15 = '#eeeeec'
 
 " -------------------------------------------------------------------------------------------------
 " Key Mappins

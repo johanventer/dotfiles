@@ -1,44 +1,50 @@
 {
   "diagnostic.checkCurrentLine": true,
-  "prettier.disableLanguages": [
-  ],
+  "suggest.noselect": false,
   "coc.preferences.formatOnSaveFiletypes": [
     "css",
     "python",
     "c",
     "cpp",
-    "typescript",
-    "typescriptreact",
+    "rust",
     "javascript",
     "javascriptreact",
-    "rust"
+    "typescript",
+    "typescriptreact"
   ],
-  "suggest.noselect": false,
-  "python.formatting.provider": "black",
   "typescript.showUnused": false,
   "typescript.suggest.autoImports": false,
   "typescript.suggest.completeFunctionCalls": false,
+  "typescript.format.enabled": false,
+  "javascript.format.enabled": false,
+  "eslint.filetypes": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "java.errors.incompleteClasspath.severity": "ignore",
+  "java.format.settings.url": "/home/johan/.config/coc/extensions/node_modules/redhat.java/eclipse-formatter.xml",
+  "python.formatting.provider": "black",
+  "rust.racer_completion": true,
+  "rust.clippy_preference": "on",
   "languageserver": {
     "ccls": {
       "command": "ccls",
       "filetypes": ["c", "cpp", "objc", "objcpp"],
-      "rootPatterns": [".ccls", "compile_commands.json", ".vim/", ".git/", ".hg/"],
+      "rootPatterns": [
+        ".ccls",
+        "compile_commands.json",
+        ".vim/",
+        ".git/",
+        ".hg/"
+      ],
       "initializationOptions": {
-         "cache": {
-           "directory": "/tmp/ccls"
-         },
-         "highlight": { "lsRanges" : true }
-       }
+        "cache": {
+          "directory": "/tmp/ccls"
+        },
+        "highlight": { "lsRanges": true }
+      }
     }
-  },
-  "eslint.filetypes": [
-      "javascript",
-      "javascriptreact",
-      "typescript",
-      "typescriptreact"
-  ],
-  "java.errors.incompleteClasspath.severity": "ignore",
-  "rust.racer_completion": true,
-  "rust.clippy_preference": "on",
-  "java.format.settings.url": "/home/johan/.config/coc/extensions/node_modules/redhat.java/eclipse-formatter.xml"
+  }
 }
