@@ -1,12 +1,14 @@
+if !exists('g:vscode')
+
 " Plugins
 " -------------------------------------------------------------------------------------------------
 
 call plug#begin('~/.local/share/nvim/plugged')
-  Plug 'neovim/nvim-lsp'                          " LSP configurations for neovim
+  Plug 'neovim/nvim-lspconfig'                    " LSP configurations for neovim
   Plug 'nvim-lua/completion-nvim'                 " Completion engine that support neovim's LSP
   Plug 'nvim-lua/diagnostic-nvim'                 " Diagnostics with neovim's LSP
   Plug 'prettier/vim-prettier',                   " Prettier :)
-              \ { 'do': 'yarn install' }
+    \ { 'do': 'yarn install' }
 
   Plug 'scrooloose/nerdtree'                      " File browser
   Plug 'qpkorr/vim-bufkill'                       " Better buffer management (don't close windows when deleting buffers)
@@ -14,28 +16,29 @@ call plug#begin('~/.local/share/nvim/plugged')
   Plug 'ciaranm/detectindent'                     " Detect indents
   Plug 'tpope/vim-commentary'                     " Auto commenting
 "  Plug 'tpope/vim-fugitive'                       " Git
+"  Plug 'airblade/vim-gitgutter'                   " Git gutter
   Plug 'junegunn/fzf'                             " Fuzzy finder
   Plug 'junegunn/fzf.vim'                         " Fuzzy finder vim helpers
   Plug 'ryanoasis/vim-devicons'                   " Icons for NERDTree
   Plug 'vim-airline/vim-airline'                  " Airline status line
+  "Plug 'itchyny/lightline.vim'                    " Status line
   Plug 'jackguo380/vim-lsp-cxx-highlight'         " Semantic highlighting for c/c++/objc
   Plug 'djoshea/vim-autoread'                     " Auto reload files when they change
   Plug 'kassio/neoterm'                           " Terminal management
   Plug 'edkolev/tmuxline.vim'                     " tmux airline
   Plug 'uiiaoo/java-syntax.vim'                   " Better Java syntax highlighting
-  "Plug 'airblade/vim-gitgutter'
   Plug 'Yggdroot/indentLine'
   "Plug 'neoclide/coc.nvim', {'branch': 'release'} " coc intellisense engine
   
   " Themes
-  Plug 'vim-airline/vim-airline-themes'
-  Plug 'morhetz/gruvbox'
-  Plug 'rakr/vim-one'
+  "Plug 'vim-airline/vim-airline-themes'
+  "Plug 'morhetz/gruvbox'
+  "Plug 'rakr/vim-one'
   Plug 'ayu-theme/ayu-vim'
-  Plug 'dempfi/vim-airline-neka'
-  Plug 'danilo-augusto/vim-afterglow'
-  Plug 'rainglow/vim'
-  Plug 'connorholyday/vim-snazzy'
+  "Plug 'dempfi/vim-airline-neka'
+  "Plug 'danilo-augusto/vim-afterglow'
+  "Plug 'rainglow/vim'
+  "Plug 'connorholyday/vim-snazzy'
 call plug#end()
 
 " -------------------------------------------------------------------------------------------------
@@ -43,20 +46,29 @@ call plug#end()
 " -------------------------------------------------------------------------------------------------
 
 lua <<EOF
+local nvim_command = vim.api.nvim_command
+
 local on_attach_vim = function()
   require'completion'.on_attach()
   require'diagnostic'.on_attach()
+  nvim_command('autocmd CursorHold <buffer> lua vim.lsp.util.show_line_diagnostics()')
 end
+
 require'nvim_lsp'.tsserver.setup{on_attach=on_attach_vim}
+require'nvim_lsp'.jdtls.setup{on_attach=on_attach_vim}
 EOF
 
 set shortmess+=c                            " Avoid displaying insert completion messages
-set completeopt=noinsert,menuone,preview    " Sets the behaviour of the autocompletion menu
+set completeopt=noinsert,menuone            " Sets the behaviour of the autocompletion menu
 
 function! s:check_back_space() abort
     let col = col('.') - 1
     return !col || getline('.')[col - 1]  =~ '\s'
 endfunction
+
+" Use <Tab> and <S-Tab> to navigate through popup menu
+inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 
 " Use TAB as a completion trigger key
 inoremap <silent><expr> <TAB>
@@ -74,21 +86,23 @@ nnoremap <silent> gr    <cmd>lua vim.lsp.buf.references()<CR>
 nnoremap <silent> g0    <cmd>lua vim.lsp.buf.document_symbol()<CR>
 nnoremap <silent> gW    <cmd>lua vim.lsp.buf.workspace_symbol()<CR>
 nnoremap          <f2>  <cmd>lua vim.lsp.buf.rename()<CR>
-nnoremap <silent> <f8>  :PrevDiagnostic
-nnoremap <silent> <f9>  :NextDiagnostic
+nnoremap <silent> <f8>  :PrevDiagnosticCycle<CR>
+nnoremap <silent> <f9>  :NextDiagnosticCycle<CR>
+
+" Why?
+au BufNewFile,BufRead *.ts setlocal filetype=typescript
+au BufNewFile,BufRead *.tsx setlocal filetype=typescript.tsx
 
 " -------------------------------------------------------------------------------------------------
 " Plugin Configuration
 " -------------------------------------------------------------------------------------------------
 
 " Prettier
-augroup prettier
-    autocmd!
-    autocmd BufWritePost * PrettierAsync
-augroup end
 let g:prettier#config#print_width = '80'
 let g:prettier#config#tab_width = '2'
 let g:prettier#config#use_tabs = 'false'
+let g:prettier#autoformat = 1
+let g:prettier#autoformat_require_pragma = 0
 
 " Disable highlighting variables in Java
 highlight link JavaIdentifier NONE
@@ -117,24 +131,18 @@ augroup end
 
 " FZF
 command! -bang -nargs=* Ag call fzf#vim#ag(<q-args>, '--hidden --literal --ignore node_modules --ignore .git --ignore target', <bang>0) 
-
-" COC
-let g:coc_global_extensions = [
-            \'coc-highlight', 'coc-tsserver', 'coc-html', 'coc-python', 'coc-css',
-            \'coc-eslint', 'coc-prettier', 'coc-json', 'coc-java',
-            \'coc-actions', 'coc-yaml', 'coc-rls']
-
-augroup custom_coc
-    autocmd!
-    autocmd FileType python let b:coc_root_patterns = ['.pylintrc', 'requirements.txt']
-    autocmd FileType typescript.tsx,typescript,javascript,javascript.tsx let b:coc_root_patterns = ['package.json']
-    "autocmd CursorHold * silent call CocActionAsync('highlight')
-augroup end
+let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6 } }
 
 " Airline
 let g:airline_powerline_fonts = 1
 let g:airline#extensions#tabline#enabled = 0
 let g:airline#extensions#branch#enabled=1
+
+" -------------------------------------------------------------------------------------------------
+" gnvim
+" -------------------------------------------------------------------------------------------------
+
+set guifont=Cousine\ Nerd\ Font\ Regular:h10
 
 " -------------------------------------------------------------------------------------------------
 " Basics
@@ -169,23 +177,8 @@ set clipboard+=unnamedplus                  " Use the system clipboard by defaul
 " Colors
 let ayucolor="mirage"
 let g:airline_theme = 'ayu'
+let g:lightline = { 'colorscheme': 'wombat' }
 colorscheme ayu
-" let g:terminal_color_0  = '#2e3436'
-" let g:terminal_color_1  = '#cc0000'
-" let g:terminal_color_2  = '#4e9a06'
-" let g:terminal_color_3  = '#c4a000'
-" let g:terminal_color_4  = '#3465a4'
-" let g:terminal_color_5  = '#75507b'
-" let g:terminal_color_6  = '#0b939b'
-" let g:terminal_color_7  = '#d3d7cf'
-" let g:terminal_color_8  = '#555753'
-" let g:terminal_color_9  = '#ef2929'
-" let g:terminal_color_10 = '#8ae234'
-" let g:terminal_color_11 = '#fce94f'
-" let g:terminal_color_12 = '#729fcf'
-" let g:terminal_color_13 = '#ad7fa8'
-" let g:terminal_color_14 = '#00f5e9'
-" let g:terminal_color_15 = '#eeeeec'
 
 " -------------------------------------------------------------------------------------------------
 " Key Mappings
@@ -234,8 +227,8 @@ nmap <C-q>     :BD<cr>
 nmap <C-s>     :w<cr>
 
 " Navigate quickfile
-nmap <f9>      :cn<cr>
-nmap <F21>     :cprev<cr>
+"nmap <f9>      :cn<cr>
+"nmap <F21>     :cprev<cr>
 
 " Ctrl-p fuzzy file finder
 nmap <C-p>     :Files<CR>
@@ -264,11 +257,11 @@ function! Build()
         return
     endif
     " Kill any running process in the terminal
-	:Tkill
+    :Tkill
     " Clear the terminal and any scrollback
-	:Tclear!
+    :Tclear!
     " Open the terminal
-	:Topen
+    :Topen
     " Run the build command
     execute ":T ". g:build_cmd
 endfunction
@@ -279,3 +272,5 @@ map <f4> :cclose<cr>
 " Allow local rc files
 set exrc
 set secure
+
+endif
