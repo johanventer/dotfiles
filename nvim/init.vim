@@ -9,7 +9,7 @@ call plug#begin('~/.local/share/nvim/plugged')
   Plug 'nvim-lua/diagnostic-nvim'                 " Diagnostics with neovim's LSP
   Plug 'prettier/vim-prettier',                   " Prettier :)
     \ { 'do': 'yarn install' }
-
+  Plug 'airblade/vim-rooter'                      " Switch local working directory to project root
   Plug 'scrooloose/nerdtree'                      " File browser
   Plug 'qpkorr/vim-bufkill'                       " Better buffer management (don't close windows when deleting buffers)
   Plug 'sheerun/vim-polyglot'                     " Language packs
