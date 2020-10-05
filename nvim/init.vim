@@ -27,7 +27,8 @@ call plug#begin('~/.local/share/nvim/plugged')
   Plug 'kassio/neoterm'                           " Terminal management
   Plug 'edkolev/tmuxline.vim'                     " tmux airline
   Plug 'uiiaoo/java-syntax.vim'                   " Better Java syntax highlighting
-  Plug 'Yggdroot/indentLine'
+  Plug 'Yggdroot/indentLine'                      " Show line indents
+  Plug 'drmingdrmer/vim-toggle-quickfix'          " Quickly toggle quickfix
   "Plug 'neoclide/coc.nvim', {'branch': 'release'} " coc intellisense engine
   
   " Themes
@@ -39,6 +40,8 @@ call plug#begin('~/.local/share/nvim/plugged')
   "Plug 'danilo-augusto/vim-afterglow'
   "Plug 'rainglow/vim'
   "Plug 'connorholyday/vim-snazzy'
+  "Plug 'sonph/onehalf', {'rtp': 'vim/'}
+  Plug 'jacoborus/tender.vim'
 call plug#end()
 
 " -------------------------------------------------------------------------------------------------
@@ -86,12 +89,12 @@ nnoremap <silent> gr    <cmd>lua vim.lsp.buf.references()<CR>
 nnoremap <silent> g0    <cmd>lua vim.lsp.buf.document_symbol()<CR>
 nnoremap <silent> gW    <cmd>lua vim.lsp.buf.workspace_symbol()<CR>
 nnoremap          <f2>  <cmd>lua vim.lsp.buf.rename()<CR>
-nnoremap <silent> <f8>  :PrevDiagnosticCycle<CR>
-nnoremap <silent> <f9>  :NextDiagnosticCycle<CR>
+nnoremap <silent> <f8>  :NextDiagnosticCycle<CR>
+nnoremap <silent> <leader><f8>  :PrevDiagnosticCycle<CR>
 
 " Why?
-au BufNewFile,BufRead *.ts setlocal filetype=typescript
-au BufNewFile,BufRead *.tsx setlocal filetype=typescript.tsx
+"au BufNewFile,BufRead *.ts setlocal filetype=typescript
+"au BufNewFile,BufRead *.tsx setlocal filetype=typescript.tsx
 
 " -------------------------------------------------------------------------------------------------
 " Plugin Configuration
@@ -101,8 +104,11 @@ au BufNewFile,BufRead *.tsx setlocal filetype=typescript.tsx
 let g:prettier#config#print_width = '80'
 let g:prettier#config#tab_width = '2'
 let g:prettier#config#use_tabs = 'false'
-let g:prettier#autoformat = 1
-let g:prettier#autoformat_require_pragma = 0
+let g:prettier#autoformat = 0
+augroup prettier
+  autocmd!
+  autocmd BufWritePre * PrettierAsync
+augroup end
 
 " Disable highlighting variables in Java
 highlight link JavaIdentifier NONE
@@ -113,11 +119,14 @@ autocmd FileType javascript setlocal commentstring=//\ %s
 autocmd FileType typescript setlocal commentstring=//\ %s
 autocmd FileType javascriptreact setlocal commentstring=//\ %s
 autocmd FileType typescriptreact setlocal commentstring=//\ %s
+autocmd FileType javascript.tsx setlocal commentstring=//\ %s
+autocmd FileType typescript.tsx setlocal commentstring=//\ %s
 
 " neoterm
 let g:neoterm_default_mod = "botright"
 let g:neoterm_size = 15
 let g:neoterm_autoscroll = 1
+let g:neoterm_autoinsert = 1
 
 " NERDTree
 let NERDTreeShowHidden=1                      " Show hidden files in nerdtree
@@ -137,6 +146,9 @@ let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6 } }
 let g:airline_powerline_fonts = 1
 let g:airline#extensions#tabline#enabled = 0
 let g:airline#extensions#branch#enabled=1
+
+" Indentline
+let g:indentLine_char = '▏'
 
 " -------------------------------------------------------------------------------------------------
 " gnvim
@@ -176,9 +188,9 @@ set clipboard+=unnamedplus                  " Use the system clipboard by defaul
 
 " Colors
 let ayucolor="mirage"
-let g:airline_theme = 'ayu'
-let g:lightline = { 'colorscheme': 'wombat' }
-colorscheme ayu
+let g:airline_theme = 'tender'
+"let g:lightline = { 'colorscheme': 'wombat' }
+colorscheme tender
 
 " -------------------------------------------------------------------------------------------------
 " Key Mappings
@@ -188,9 +200,6 @@ let mapleader=' '
 
 " Edit vimrc
 nmap <leader>v :execute "vsplit" g:vimrc_path<cr> 
-
-" Toggle terminal
-nmap ` :Ttoggle<cr>
 
 " Toggle file browser
 nmap <leader>b :NERDTreeToggle<CR>
@@ -209,16 +218,11 @@ nmap <f1> :Buffers<cr>
 
 " Find in project
 nmap <leader>f :Ag<space>
-nmap <f3> :Ag<space>
 nmap <leader>F :Ag <C-R><C-W><CR>
 
 " Auto commenting
 nmap <leader>/ gcc
 vmap <leader>/ gc
-
-" Format file
-command! -nargs=0 Format :PrettierAsync
-nmap <leader>" :Format<cr>
 
 " Delete buffer
 nmap <C-q>     :BD<cr> 
@@ -226,22 +230,35 @@ nmap <C-q>     :BD<cr>
 " Write
 nmap <C-s>     :w<cr>
 
-" Navigate quickfile
-"nmap <f9>      :cn<cr>
-"nmap <F21>     :cprev<cr>
+" Navigate quicklist
+nmap <bs>         <Plug>window:quickfix:loop
+nmap <f9>         :cn<cr>
+nmap <leader><f9> :cprev<cr>
 
 " Ctrl-p fuzzy file finder
-nmap <C-p>     :Files<CR>
+nmap <C-p>     :GFiles<CR>
+nmap <C-f>     :Files<CR>
 
 " Window navigation
-nmap <C-S-Left>   <C-w>h
-nmap <C-S-Right>  <C-w>l
-nmap <C-S-Up>     <C-w>k
-nmap <C-S-Down>   <C-w>j
+nnoremap <C-S-Left>   <C-w>h
+nnoremap <C-S-Right>  <C-w>l
+nnoremap <C-S-Up>     <C-w>k
+nnoremap <C-S-Down>   <C-w>j
+inoremap <C-S-Left>   <C-\><C-N><C-w>h
+inoremap <C-S-Right>  <C-\><C-N><C-w>l
+inoremap <C-S-Up>     <C-\><C-N><C-w>k
+inoremap <C-S-Down>   <C-\><C-N><C-w>j
+tnoremap <C-S-Left>   <C-\><C-N><C-w>h
+tnoremap <C-S-Right>  <C-\><C-N><C-w>l
+tnoremap <C-S-Up>     <C-\><C-N><C-w>k
+tnoremap <C-S-Down>   <C-\><C-N><C-w>j
 
 " Terminal
 nmap <silent> <leader>t :botright Ttoggle<cr>
 tmap <Esc> <C-\><C-n>
+nmap ` :Ttoggle<cr>
+autocmd BufEnter term://* startinsert
+autocmd BufLeave term://* stopinsert
 
 " Todo 
 nmap <leader>` :e ~/Desktop/todo.txt<cr>
@@ -267,7 +284,6 @@ function! Build()
 endfunction
 command! Build call Build()
 map <f5> :Build<cr>
-map <f4> :cclose<cr>
 
 " Allow local rc files
 set exrc
