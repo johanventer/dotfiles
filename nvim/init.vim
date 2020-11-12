@@ -27,8 +27,9 @@ if !exists('g:vscode')
   set completeopt=noinsert,menuone            " Sets the behaviour of the autocompletion menu
  
   " Source config when saved
-  let g:vimrc_path = expand('<sfile>:p')
-  execute "autocmd! BufWritePost" g:vimrc_path "source" g:vimrc_path
+  if has("autocmd")
+    au! BufWritePost .vimrc,init.vim nested so $MYVIMRC
+  en
 
   " Copy into X11 PRIMARY when releasing the mousebutton in visual mode (for copy on select)
   " and stay in visual mode
@@ -44,7 +45,7 @@ if !exists('g:vscode')
   let mapleader=' '                        
 
   " Edit vimrc
-  nmap <leader>v :execute "vsplit" g:vimrc_path<cr> 
+  nmap <leader>v :execute "vsplit" $MYVIMRC<cr> 
 
   " Split vertically
   nmap <leader>\ :vsplit<cr> :wincmd l<cr>
@@ -59,7 +60,6 @@ if !exists('g:vscode')
   nmap <C-s>     :w<cr>
 
   " Navigate quicklist
-  nmap <bs>         <Plug>window:quickfix:loop
   nmap <f9>         :cn<cr>
   nmap <leader><f9> :cprev<cr>
 
@@ -94,6 +94,15 @@ if !exists('g:vscode')
       
       " Better buffer management (don't close windows when deleting buffers)
       Plug 'qpkorr/vim-bufkill'               
+
+      " Indent and tab/space detection
+      Plug 'roryokane/detectindent'
+
+      " Auto reload files when they change
+      Plug 'djoshea/vim-autoread'                     
+      
+      " Show line indents
+      Plug 'Yggdroot/indentLine'                      
       
       " NERDTree file browser
       Plug 'scrooloose/nerdtree'
@@ -107,6 +116,9 @@ if !exists('g:vscode')
       
       " Better terminal manangement
       Plug 'kassio/neoterm'
+      
+      " Quickly toggle quickfix
+      Plug 'drmingdrmer/vim-toggle-quickfix'
 
       " LSP completion and diagnostics
       Plug 'neovim/nvim-lspconfig'                " LSP configurations for neovim
@@ -116,7 +128,15 @@ if !exists('g:vscode')
       " Rust  
       Plug 'rust-lang/rust.vim'
 
+      " Prettier
+      Plug 'prettier/vim-prettier', { 'do': 'yarn install' }
+
+      " Better Java syntax highlighting
+      Plug 'uiiaoo/java-syntax.vim'                   
+
       " Status lines and themes
+      Plug 'itchyny/lightline.vim'                " Status line
+      Plug 'jacoborus/tender.vim'
       "Plug 'vim-airline/vim-airline-themes'
       "Plug 'morhetz/gruvbox'
       "Plug 'rakr/vim-one'
@@ -126,7 +146,6 @@ if !exists('g:vscode')
       "Plug 'rainglow/vim'
       "Plug 'connorholyday/vim-snazzy'
       "Plug 'sonph/onehalf', {'rtp': 'vim/'}
-      Plug 'jacoborus/tender.vim'
     call plug#end()
 
     "-------------------------------------------------------------------------------------------------
@@ -134,9 +153,32 @@ if !exists('g:vscode')
     "-------------------------------------------------------------------------------------------------
     "let ayucolor="mirage"
     "let g:airline_theme = 'tender'
-    ""let g:lightline = { 'colorscheme': 'wombat' }
     if PlugLoaded("tender.vim")
         colorscheme tender
+    endif
+    
+    "-------------------------------------------------------------------------------------------------
+    " vim-rooter
+    "-------------------------------------------------------------------------------------------------
+    if PlugLoaded("vim-rooter")
+      let g:rooter_patterns = ['package.json', '.git', '_darcs', '.hg', '.bzr', '.svn', 'Makefile']
+    endif
+
+    "-------------------------------------------------------------------------------------------------
+    " Detect indents and tab/spaces
+    "-------------------------------------------------------------------------------------------------
+    if PlugLoaded("detectindent")
+      augroup DetectIndent
+        autocmd!
+        autocmd BufReadPost *  DetectIndent
+      augroup END
+    endif
+    
+    "-------------------------------------------------------------------------------------------------
+    " Show line indents
+    "-------------------------------------------------------------------------------------------------
+    if PlugLoaded("indentLine")
+      let g:indentLine_char = '▏'
     endif
 
     "-------------------------------------------------------------------------------------------------
@@ -197,12 +239,39 @@ if !exists('g:vscode')
       autocmd BufEnter term://* startinsert
       autocmd BufLeave term://* stopinsert
     endif
+    
+    "-------------------------------------------------------------------------------------------------
+    " Toggle quickfix
+    "-------------------------------------------------------------------------------------------------
+    if PlugLoaded("vim-toggle-quickfix")
+      nmap <bs> <Plug>window:quickfix:loop
+    endif
 
     "-------------------------------------------------------------------------------------------------
     " Rust (using LSP for completion/diagnostics, but this has an up to date
     " filetype plugin.
     "-------------------------------------------------------------------------------------------------
-    let g:rustfmt_autosave = 1                  " Format Rust files on save
+    if PlugLoaded("rust.vim")
+      let g:rustfmt_autosave = 1                  " Format Rust files on save
+    endif
+
+    "-------------------------------------------------------------------------------------------------
+    " Prettier
+    "-------------------------------------------------------------------------------------------------
+    if PlugLoaded("vim-prettier")
+      let g:prettier#autoformat = 1
+      let g:prettier#autoformat_require_pragma = 0
+      let g:prettier#quickfix_enabled = 0
+      let g:prettier#config#print_width = '80'
+    endif
+    
+    "-------------------------------------------------------------------------------------------------
+    " Better Java syntax highlighting
+    "-------------------------------------------------------------------------------------------------
+    if PlugLoaded("java-syntax.vim")
+      " Disable highlighting variables in Java
+      highlight link JavaIdentifier NONE
+    endif
     
     "-------------------------------------------------------------------------------------------------
     " LSP completion & diagnostics
@@ -250,74 +319,14 @@ EOF
         nnoremap <silent> <f8>  :NextDiagnosticCycle<CR>
         nnoremap <silent> <leader><f8>  :PrevDiagnosticCycle<CR>
     endif
+    
+    "-------------------------------------------------------------------------------------------------
+    " gnvim - nvim GUI
+    "-------------------------------------------------------------------------------------------------
+    if exists('g:gnvim')
+      set guifont=Cousine\ Nerd\ Font\ Regular:h10
+      let g:fzf_layout = { 'down': '~40%' }
+    endif
 
   endif
 endif
-
-" OLD STUFF BELOW HERE
-" ----------------------------------------------------------------------------------------------------
-" ----------------------------------------------------------------------------------------------------
-" ----------------------------------------------------------------------------------------------------
-" ----------------------------------------------------------------------------------------------------
-
-""  Plug 'prettier/vim-prettier',                   " Prettier :)
-""    \ { 'do': 'yarn install' }
-""  Plug 'sheerun/vim-polyglot'                     " Language packs
-""  Plug 'tpope/vim-fugitive'                       " Git
-""  Plug 'airblade/vim-gitgutter'                   " Git gutter
-""  Plug 'ryanoasis/vim-devicons'                   " Icons for NERDTree
-""  Plug 'vim-airline/vim-airline'                  " Airline status line
-"  "Plug 'itchyny/lightline.vim'                    " Status line
-""  Plug 'jackguo380/vim-lsp-cxx-highlight'         " Semantic highlighting for c/c++/objc
-"  Plug 'djoshea/vim-autoread'                     " Auto reload files when they change
-""  Plug 'edkolev/tmuxline.vim'                     " tmux airline
-""  Plug 'uiiaoo/java-syntax.vim'                   " Better Java syntax highlighting
-"  Plug 'Yggdroot/indentLine'                      " Show line indents
-"  Plug 'drmingdrmer/vim-toggle-quickfix'          " Quickly toggle quickfix
-"  "Plug 'neomake/neomake'                          
-"  
-
-"
-"" -------------------------------------------------------------------------------------------------
-"" Plugin Configuration
-"" -------------------------------------------------------------------------------------------------
-"
-"" Neomake
-"let g:neomake_open_list = 2
-"
-"" Prettier
-""let g:prettier#config#print_width = '80'
-""let g:prettier#config#tab_width = '2'
-""let g:prettier#config#use_tabs = 'false'
-""let g:prettier#autoformat = 0
-""augroup prettier
-""  autocmd!
-""  autocmd BufWritePre * PrettierAsync
-""augroup end
-"
-"" Disable highlighting variables in Java
-"highlight link JavaIdentifier NONE
-
-"" DetectIndent
-"Plug 'ciaranm/detectindent'             " Intelligent indenting
-""augroup detect_indent
-""    autocmd!
-""    autocmd BufReadPost * DetectIndent
-""augroup end
-"
-"" FZF
-"
-"" Airline
-"let g:airline_powerline_fonts = 1
-"let g:airline#extensions#tabline#enabled = 0
-"let g:airline#extensions#branch#enabled=1
-"
-"" Indentline
-"let g:indentLine_char = '▏'
-"
-"" -------------------------------------------------------------------------------------------------
-"" gnvim
-"" -------------------------------------------------------------------------------------------------
-"
-"set guifont=Cousine\ Nerd\ Font\ Regular:h10
-"
