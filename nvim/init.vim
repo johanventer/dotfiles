@@ -101,9 +101,6 @@ if !exists('g:vscode')
       " Auto reload files when they change
       Plug 'djoshea/vim-autoread'                     
       
-      " Show line indents
-      Plug 'Yggdroot/indentLine'                      
-      
       " NERDTree file browser
       Plug 'scrooloose/nerdtree'
 
@@ -123,7 +120,6 @@ if !exists('g:vscode')
       " LSP completion and diagnostics
       Plug 'neovim/nvim-lspconfig'                " LSP configurations for neovim
       Plug 'nvim-lua/completion-nvim'             " Completion engine that support neovim's LSP
-      Plug 'nvim-lua/diagnostic-nvim'             " Diagnostics with neovim's LSP
 
       " Rust  
       Plug 'rust-lang/rust.vim'
@@ -133,6 +129,9 @@ if !exists('g:vscode')
 
       " Better Java syntax highlighting
       Plug 'uiiaoo/java-syntax.vim'                   
+
+      " Apex ftplugin and syntax highlighting
+      Plug 'ejholmes/vim-forcedotcom'
 
       " Status lines and themes
       Plug 'itchyny/lightline.vim'                " Status line
@@ -175,13 +174,6 @@ if !exists('g:vscode')
     endif
     
     "-------------------------------------------------------------------------------------------------
-    " Show line indents
-    "-------------------------------------------------------------------------------------------------
-    if PlugLoaded("indentLine")
-      let g:indentLine_char = '▏'
-    endif
-
-    "-------------------------------------------------------------------------------------------------
     " NERDTree - file browser
     "-------------------------------------------------------------------------------------------------
     if PlugLoaded("nerdtree")
@@ -200,12 +192,35 @@ if !exists('g:vscode')
     " FZF - fuzzy finder
     "-------------------------------------------------------------------------------------------------
     if PlugLoaded("fzf.vim")
-      command! -bang -nargs=* Ag call fzf#vim#ag(<q-args>, '--hidden --literal --ignore node_modules --ignore .git --ignore target', <bang>0) 
       let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6 } }
 
+      " " Custom FZF command for listing all symbols in the current buffer using the LSP
+      " lua <<EOF
+      "   vim.lsp.handlers["textDocument/documentSymbol"] = vim.lsp.with(
+      "     vim.lsp.diagnostic.on_publish_diagnostics, {
+      "       -- Disable signs
+      "      signs = false,
+      "     }
+      "  )
+" EOF
+      " func FormatSymbol(key, val)
+      "   let bufnr = a:val['bufnr']
+      "   let name = bufname(bufnr)
+      "   let text = a:val['text']
+      "   let lnum = a:val['lnum']
+      "   let col = a:val['col']
+      "   return printf("%s[%d:%d]\t%s", name, lnum, col, text)
+      " endfunc
+      " func Symbols()
+      "   luado vim.lsp.buf.document_symbol()
+      "   call fzf#run(fzf#wrap({'source': map(getqflist(), function('FormatSymbol'))}))
+      "   call setqflist([])
+      " endfunc
+      " command! -bang -nargs=* Symbols call Symbols()
+      " nmap <C-g> :Symbols<cr>
+
       " Ctrl-p fuzzy file finder
-      nmap <C-p> :GFiles<CR>
-      nmap <C-f> :Files<CR>
+      nmap <C-p> :Files<CR>
 
       " Buffers
       nmap <f1> :Buffers<cr>
@@ -263,6 +278,12 @@ if !exists('g:vscode')
       let g:prettier#autoformat_require_pragma = 0
       let g:prettier#quickfix_enabled = 0
       let g:prettier#config#print_width = '80'
+
+      "let g:prettier#autoformat = 0
+      "augroup Prettier
+      "  autocmd!
+      "  autocmd BufWritePre *.js,*.jsx,*.mjs,*.ts,*.tsx,*.css,*.less,*.scss,*.json,*.graphql,*.md,*.vue,*.yaml,*.html PrettierAsync
+      "augroup END
     endif
     
     "-------------------------------------------------------------------------------------------------
@@ -278,17 +299,24 @@ if !exists('g:vscode')
     "-------------------------------------------------------------------------------------------------
     if PlugLoaded("nvim-lspconfig")
       lua <<EOF
-          local nvim_command = vim.api.nvim_command
+        local nvim_command = vim.api.nvim_command
           
-          local on_attach_vim = function()
-            require'completion'.on_attach()
-            require'diagnostic'.on_attach()
-            nvim_command('autocmd CursorHold <buffer> lua vim.lsp.util.show_line_diagnostics()')
-          end
+        local on_attach_vim = function()
+          require'completion'.on_attach()
+        end
           
-          require'nvim_lsp'.tsserver.setup{on_attach=on_attach_vim}
-          require'nvim_lsp'.jdtls.setup{on_attach=on_attach_vim}
-          require'nvim_lsp'.rust_analyzer.setup{on_attach=on_attach_vim}
+        require'lspconfig'.tsserver.setup{on_attach=on_attach_vim}
+        require'lspconfig'.jdtls.setup{on_attach=on_attach_vim}
+        require'lspconfig'.rust_analyzer.setup{on_attach=on_attach_vim}
+        require'lspconfig'.apex_jorje.setup{on_attach=on_attach_vim}
+
+        vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
+          vim.lsp.diagnostic.on_publish_diagnostics, {
+            virtual_text = true,
+            signs = true,
+            update_in_insert = false,
+         }
+       )
 EOF
 
         function! s:check_back_space() abort
@@ -316,8 +344,7 @@ EOF
         nnoremap <silent> g0    <cmd>lua vim.lsp.buf.document_symbol()<CR>
         nnoremap <silent> gW    <cmd>lua vim.lsp.buf.workspace_symbol()<CR>
         nnoremap          <f2>  <cmd>lua vim.lsp.buf.rename()<CR>
-        nnoremap <silent> <f8>  :NextDiagnosticCycle<CR>
-        nnoremap <silent> <leader><f8>  :PrevDiagnosticCycle<CR>
+        nnoremap <silent> <f8>  <cmd>lua vim.lsp.diagnostic.goto_next()<CR>
     endif
     
     "-------------------------------------------------------------------------------------------------
