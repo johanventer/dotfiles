@@ -117,12 +117,13 @@ if !exists('g:vscode')
       " Quickly toggle quickfix
       Plug 'drmingdrmer/vim-toggle-quickfix'
 
-      " LSP completion and diagnostics
+      " LSP completion
       Plug 'neovim/nvim-lspconfig'                " LSP configurations for neovim
       Plug 'nvim-lua/completion-nvim'             " Completion engine that support neovim's LSP
 
       " Rust  
       Plug 'rust-lang/rust.vim'
+      Plug 'cespare/vim-toml'
 
       " Prettier
       Plug 'prettier/vim-prettier', { 'do': 'yarn install' }
@@ -276,14 +277,15 @@ if !exists('g:vscode')
     if PlugLoaded("vim-prettier")
       let g:prettier#autoformat = 1
       let g:prettier#autoformat_require_pragma = 0
-      let g:prettier#quickfix_enabled = 0
-      let g:prettier#config#print_width = '80'
+      let g:prettier#quickfix_enabled = 1
 
-      "let g:prettier#autoformat = 0
-      "augroup Prettier
-      "  autocmd!
-      "  autocmd BufWritePre *.js,*.jsx,*.mjs,*.ts,*.tsx,*.css,*.less,*.scss,*.json,*.graphql,*.md,*.vue,*.yaml,*.html PrettierAsync
-      "augroup END
+      " let g:prettier#config#print_width = '80'
+      " let g:prettier#config#trailing_comma = 'none'
+
+      " augroup Prettier
+      "   autocmd!
+      "   autocmd BufWritePre *.js,*.jsx,*.mjs,*.ts,*.tsx,*.css,*.less,*.scss,*.json,*.graphql,*.md,*.vue,*.yaml,*.html PrettierAsync
+      " augroup END
     endif
     
     "-------------------------------------------------------------------------------------------------
@@ -318,6 +320,12 @@ if !exists('g:vscode')
          }
        )
 EOF
+
+        " Show diagnostics on hover
+        augroup Diagnostics
+          autocmd!
+          autocmd CursorHold * lua vim.lsp.diagnostic.show_line_diagnostics()
+        augroup END
 
         function! s:check_back_space() abort
           let col = col('.') - 1

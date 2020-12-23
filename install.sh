@@ -5,7 +5,7 @@ if ! [ -d ~/.config/nvim ]; then
 fi
 
 ln -fsv "$(pwd)/nvim/init.vim" ~/.config/nvim
-ln -fsv "$(pwd)/nvim/coc-settings.json" ~/.config/nvim
+ln -fsv "$(pwd)/zshrc" ~/.zshrc
 
 curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
 	    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
