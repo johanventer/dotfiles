@@ -22,7 +22,7 @@ if !exists('g:vscode')
   set cursorline                              " Highlight the line the cursor is currently on
   set sessionoptions+=globals                 " Include global variables in sessions saved with mksession
   set backspace=indent,eol,start              " Allow backspace everywhere
-  set clipboard+=unnamedplus                  " Use the system clipboard by default for yank/delete/paste
+  set clipboard+=unnamed,unnamedplus          " Use the system clipboard by default for yank/delete/paste
   set shortmess+=c                            " Avoid displaying insert completion messages
   set completeopt=noinsert,menuone            " Sets the behaviour of the autocompletion menu
  
@@ -33,7 +33,7 @@ if !exists('g:vscode')
 
   " Copy into X11 PRIMARY when releasing the mousebutton in visual mode (for copy on select)
   " and stay in visual mode
-  :vnoremap <LeftRelease> "*y<LeftRelease>gv
+  " :vnoremap <LeftRelease> "*y<LeftRelease>gv
 
   " Allow local rc files
   set exrc
@@ -126,7 +126,7 @@ if !exists('g:vscode')
       Plug 'cespare/vim-toml'
 
       " Prettier
-      Plug 'prettier/vim-prettier', { 'do': 'yarn install' }
+      Plug 'johanventer/vim-prettier', { 'do': 'yarn install' }
 
       " Better Java syntax highlighting
       Plug 'uiiaoo/java-syntax.vim'                   
@@ -227,8 +227,8 @@ if !exists('g:vscode')
       nmap <f1> :Buffers<cr>
   
       " Find in project
-      nmap <leader>f :Ag<space>
-      nmap <leader>F :Ag <C-R><C-W><CR>
+      nmap <leader>f :Rg<space>
+      nmap <leader>F :Rg <C-R><C-W><CR>
     endif
 
     "-------------------------------------------------------------------------------------------------
@@ -275,11 +275,10 @@ if !exists('g:vscode')
     " Prettier
     "-------------------------------------------------------------------------------------------------
     if PlugLoaded("vim-prettier")
-      let g:prettier#autoformat = 1
+      let g:prettier#autoformat = 0
       let g:prettier#autoformat_require_pragma = 0
       let g:prettier#quickfix_enabled = 1
-
-      " let g:prettier#config#print_width = '80'
+      let g:prettier#config#print_width = '80'
       " let g:prettier#config#trailing_comma = 'none'
 
       " augroup Prettier
@@ -310,7 +309,7 @@ if !exists('g:vscode')
         require'lspconfig'.tsserver.setup{on_attach=on_attach_vim}
         require'lspconfig'.jdtls.setup{on_attach=on_attach_vim}
         require'lspconfig'.rust_analyzer.setup{on_attach=on_attach_vim}
-        require'lspconfig'.apex_jorje.setup{on_attach=on_attach_vim}
+        -- require'lspconfig'.apex_jorje.setup{on_attach=on_attach_vim}
 
         vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
           vim.lsp.diagnostic.on_publish_diagnostics, {
@@ -363,5 +362,32 @@ EOF
       let g:fzf_layout = { 'down': '~40%' }
     endif
 
+    "-------------------------------------------------------------------------------------------------
+    " WSL specific stuff
+    "-------------------------------------------------------------------------------------------------
+    function! IsWSL()
+      if has("unix")
+        let lines = readfile("/proc/version")
+        if lines[0] =~ "Microsoft"
+          return 1
+        endif
+      endif
+      return 0
+    endfunction
+
+    if IsWSL()
+      let g:clipboard = {
+                \   'name': 'win32yank-wsl',
+                \   'copy': {
+                \      '+': 'win32yank.exe -i --crlf',
+                \      '*': 'win32yank.exe -i --crlf',
+                \    },
+                \   'paste': {
+                \      '+': 'win32yank.exe -o --lf',
+                \      '*': 'win32yank.exe -o --lf',
+                \   },
+                \   'cache_enabled': 0,
+                \ }
+    endif
   endif
 endif

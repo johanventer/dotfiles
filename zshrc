@@ -26,6 +26,10 @@ export PATH="$HOME/.cargo/bin:$PATH"
 ## Aliases
 alias ls="ls --color=always"
 alias ll="ls -lash"
+alias vim="nvim"
+
+## X server
+export DISPLAY=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2; exit;}'):0.0
 
 ## Starship!
 eval "$(starship init zsh)"
