@@ -23,7 +23,7 @@ if !exists('g:vscode')
   set sessionoptions+=globals                 " Include global variables in sessions saved with mksession
   set backspace=indent,eol,start              " Allow backspace everywhere
   set clipboard+=unnamed,unnamedplus          " Use the system clipboard by default for yank/delete/paste
-  set shortmess+=c                            " Avoid displaying insert completion messages
+  "set shortmess+=c                            " Avoid displaying insert completion messages
   set completeopt=noinsert,menuone            " Sets the behaviour of the autocompletion menu
  
   " Source config when saved
