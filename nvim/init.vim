@@ -351,7 +351,7 @@ EOF
   " WSL specific stuff
   "-------------------------------------------------------------------------------------------------
   function! IsWSL()
-    if has("unix")
+    if has("unix") && filereadable("/proc/version")
       let lines = readfile("/proc/version")
       if lines[0] =~ "Microsoft"
         return 1
