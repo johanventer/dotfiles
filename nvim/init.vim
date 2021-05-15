@@ -128,7 +128,10 @@ if !exists('g:vscode')
       Plug 'cespare/vim-toml'
 
       " Prettier
-      Plug 'prettier/vim-prettier', { 'do': 'yarn install' }
+      Plug 'johanventer/vim-prettier', { 'do': 'yarn install' }
+
+      " Clang-format
+      Plug 'rhysd/vim-clang-format'
 
       " Better Java syntax highlighting
       Plug 'uiiaoo/java-syntax.vim'                   
@@ -205,6 +208,8 @@ if !exists('g:vscode')
       " Auto commenting
       nmap <leader>/ gcc
       vmap <leader>/ gc
+
+      autocmd FileType c,cpp,java setlocal commentstring=//\ %s
     endif
 
     "-------------------------------------------------------------------------------------------------
@@ -242,10 +247,18 @@ if !exists('g:vscode')
     " Prettier
     "-------------------------------------------------------------------------------------------------
     if PlugLoaded("vim-prettier")
-      let g:prettier#autoformat = 1
+      let g:prettier#autoformat = 0
       let g:prettier#autoformat_require_pragma = 0
       let g:prettier#quickfix_enabled = 1
       let g:prettier#config#print_width = '80'
+    endif
+    
+    "-------------------------------------------------------------------------------------------------
+    " Clang-format
+    "-------------------------------------------------------------------------------------------------
+    if PlugLoaded("vim-clang-format")
+      let g:clang_format#detect_style_file = 1
+      let g:clang_format#auto_format = 1
     endif
     
     "-------------------------------------------------------------------------------------------------
@@ -272,6 +285,7 @@ if !exists('g:vscode')
         require'lspconfig'.rust_analyzer.setup{on_attach=on_attach_vim}
         -- require'lspconfig'.apex_jorje.setup{on_attach=on_attach_vim}
         require'lspconfig'.jdtls.setup{on_attach = on_attach_vim}
+        require'lspconfig'.ccls.setup{on_attach=on_attach_vim}
 
         vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
           vim.lsp.diagnostic.on_publish_diagnostics, {
