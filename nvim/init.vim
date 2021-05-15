@@ -83,10 +83,9 @@ if !exists('g:vscode')
   " -------------------------------------------------------------------------------------------------
   if !exists('g:no_plugins')
     function! PlugLoaded(name)
-      let key = has_key(g:plugs, a:name)
-      let dir = isdirectory(g:plugs[a:name].dir)
-      let rtp = stridx(&rtp, substitute(g:plugs[a:name].dir, '/$', '', '')) >= 0
-      return (key && dir && rtp)
+      return has_key(g:plugs, a:name) && 
+                  \ isdirectory(g:plugs[a:name].dir) && 
+                  \ stridx(&rtp, substitute(g:plugs[a:name].dir, '/$', '', '')) >= 0
     endfunction
 
     call plug#begin('~/.local/share/nvim/plugged')
@@ -120,8 +119,11 @@ if !exists('g:vscode')
 
       " LSP completion
       Plug 'neovim/nvim-lspconfig'                " LSP configurations for neovim
+      Plug 'nvim-lua/lsp_extensions.nvim'         " LSP extensions (Rust inlays)
       Plug 'nvim-lua/completion-nvim'             " Completion engine that support neovim's LSP
       Plug 'kosayoda/nvim-lightbulb'              " Lightbulb code action
+      Plug 'RishabhRD/popfix'
+      Plug 'RishabhRD/nvim-lsputils'
 
       " Rust  
       Plug 'rust-lang/rust.vim'
@@ -148,7 +150,7 @@ if !exists('g:vscode')
     "-------------------------------------------------------------------------------------------------
     " Statusline and Colors
     "-------------------------------------------------------------------------------------------------
-    if PlugLoaded("tender.vim")
+    if PlugLoaded("palenight.vim")
         colorscheme palenight
     endif
     
@@ -296,45 +298,76 @@ if !exists('g:vscode')
        )
 EOF
 
-        " Show diagnostics on hover
-        augroup Diagnostics
-          autocmd!
-          autocmd CursorHold * lua vim.lsp.diagnostic.show_line_diagnostics()
-        augroup END
+      " Show diagnostics on hover
+      augroup Diagnostics
+        autocmd!
+        autocmd CursorHold * lua vim.lsp.diagnostic.show_line_diagnostics()
+      augroup END
 
-        function! s:check_back_space() abort
-          let col = col('.') - 1
-          return !col || getline('.')[col - 1]  =~ '\s'
-        endfunction
+      function! s:check_back_space() abort
+        let col = col('.') - 1
+        return !col || getline('.')[col - 1]  =~ '\s'
+      endfunction
 
-        " Use <Tab> and <S-Tab> to navigate through popup menu
-        inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
-        inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+      " Use <Tab> and <S-Tab> to navigate through popup menu
+      inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
+      inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 
-        " Use TAB as a completion trigger key
-        inoremap <silent><expr> <TAB>
-          \ pumvisible() ? "\<C-n>" :
-          \ <SID>check_back_space() ? "\<TAB>" :
-          \ completion#trigger_completion()
+      " Use TAB as a completion trigger key
+      inoremap <silent><expr> <TAB>
+        \ pumvisible() ? "\<C-n>" :
+        \ <SID>check_back_space() ? "\<TAB>" :
+        \ completion#trigger_completion()
 
-        " LSP mappings
-        nnoremap <silent> <f12> <cmd>lua vim.lsp.buf.declaration()<CR>
-        nnoremap <silent> <f12> <cmd>lua vim.lsp.buf.definition()<CR>
-        nnoremap <silent> K     <cmd>lua vim.lsp.buf.hover()<CR>
-        nnoremap <silent> gi    <cmd>lua vim.lsp.buf.implementation()<CR>
-        nnoremap <silent> <c-k> <cmd>lua vim.lsp.buf.signature_help()<CR>
-        nnoremap <silent> gr    <cmd>lua vim.lsp.buf.references()<CR>
-        nnoremap <silent> g0    <cmd>lua vim.lsp.buf.document_symbol()<CR>
-        nnoremap <silent> gW    <cmd>lua vim.lsp.buf.workspace_symbol()<CR>
-        nnoremap          <f2>  <cmd>lua vim.lsp.buf.rename()<CR>
-        nnoremap <silent> <f8>  <cmd>lua vim.lsp.diagnostic.goto_next()<CR>
+      " LSP mappings
+      nnoremap <silent> <f11> <cmd>lua vim.lsp.buf.declaration()<CR>
+      nnoremap <silent> gd    <cmd>lua vim.lsp.buf.declaration()<CR>
+      nnoremap <silent> <f12> <cmd>lua vim.lsp.buf.definition()<CR>
+      nnoremap <silent> <c-]> <cmd>lua vim.lsp.buf.definition()<CR>
+      nnoremap <silent> K     <cmd>lua vim.lsp.buf.hover()<CR>
+      nnoremap <silent> gD    <cmd>lua vim.lsp.buf.implementation()<CR>
+      nnoremap <silent> <c-k> <cmd>lua vim.lsp.buf.signature_help()<CR>
+      nnoremap <silent> gr    <cmd>lua vim.lsp.buf.references()<CR>
+      nnoremap <silent> g0    <cmd>lua vim.lsp.buf.document_symbol()<CR>
+      nnoremap <silent> gW    <cmd>lua vim.lsp.buf.workspace_symbol()<CR>
+      nnoremap          <f2>  <cmd>lua vim.lsp.buf.rename()<CR>
+      nnoremap <silent> ga    <cmd>lua vim.lsp.buf.code_action()<CR>
+      nnoremap <silent> <f8>  <cmd>lua vim.lsp.diagnostic.goto_next()<CR>
+      nnoremap <silent> g[ <cmd>lua vim.lsp.diagnostic.goto_prev()<CR>
+      nnoremap <silent> g] <cmd>lua vim.lsp.diagnostic.goto_next()<CR>
+    endif
+    
+    "-------------------------------------------------------------------------------------------------
+    " lsp_extensions
+    "-------------------------------------------------------------------------------------------------
+    if PlugLoaded("lsp_extensions.nvim")
+      augroup InlayHints
+        autocmd!
+        autocmd CursorMoved,InsertLeave,BufEnter,BufWinEnter,TabEnter,BufWritePost *.rs :lua require'lsp_extensions'.inlay_hints{ prefix = ' » ', highlight = "Comment", aligned = false, enabled = {"ChainingHint", "ParameterHint", "TypeHint"} }
+      augroup END
+    endif
+
+    "-------------------------------------------------------------------------------------------------
+    " lsputils
+    "-------------------------------------------------------------------------------------------------
+    if PlugLoaded("nvim-lsputils")
+      lua <<EOF
+        vim.lsp.handlers['textDocument/codeAction'] = require'lsputil.codeAction'.code_action_handler
+        vim.lsp.handlers['textDocument/references'] = require'lsputil.locations'.references_handler
+        vim.lsp.handlers['textDocument/definition'] = require'lsputil.locations'.definition_handler
+        vim.lsp.handlers['textDocument/declaration'] = require'lsputil.locations'.declaration_handler
+        vim.lsp.handlers['textDocument/typeDefinition'] = require'lsputil.locations'.typeDefinition_handler
+        vim.lsp.handlers['textDocument/implementation'] = require'lsputil.locations'.implementation_handler
+        vim.lsp.handlers['textDocument/documentSymbol'] = require'lsputil.symbols'.document_handler
+        vim.lsp.handlers['workspace/symbol'] = require'lsputil.symbols'.workspace_handler
+EOF
     endif
 
     "-------------------------------------------------------------------------------------------------
     " nvim-lightbulb
     "-------------------------------------------------------------------------------------------------
     if PlugLoaded("nvim-lightbulb")
-      autocmd CursorHold,CursorHoldI * lua require'nvim-lightbulb'.update_lightbulb()
+      autocmd CursorHold,CursorHoldI * lua require'nvim-lightbulb'.update_lightbulb{ sign = { enabled = false }, float = { enabled = true }, virtual_text = { enabled = false } }
     endif
     
     "-------------------------------------------------------------------------------------------------
