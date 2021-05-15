@@ -27,9 +27,26 @@ export PATH="$HOME/.cargo/bin:$PATH"
 alias ls="ls --color=always"
 alias ll="ls -lash"
 alias vim="nvim"
+alias gnvim="GDK_DPI_SCALE=1.5 gnvim"
 
 ## X server
 export DISPLAY=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2; exit;}'):0.0
+
+# Java/JDTLS
+export JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
+export JAR=/opt/jdtls/plugins/org.eclipse.equinox.launcher_1.6.0.v20200915-1508.jar
+export JDTLS_CONFIG=/opt/jdtls/config_linux
+export WORKSPACE=~/.jdtls/workspace
+export GRADLE_HOME=~/.jdtls/gradle
+
+export EDITOR=nvim
+
+# Set the window title
+function set_win_title() {
+  echo -ne "\033]0;${PWD/#$HOME/~}\007"
+	printf "\e]9;9;%s\e\\" "$(wslpath -m "$PWD")"
+}
+precmd_functions+=(set_win_title)
 
 ## Starship!
 eval "$(starship init zsh)"

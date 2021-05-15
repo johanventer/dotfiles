@@ -1,5 +1,5 @@
 " Disable plugins, leaving only basic nvim configuration
-"let g:no_plugins = 1
+" let g:no_plugins = 1
 
 " If using the neovim integration in VS Code, do not load any of our config
 if !exists('g:vscode')
@@ -27,6 +27,7 @@ if !exists('g:vscode')
   set completeopt=noinsert,menuone            " Sets the behaviour of the autocompletion menu
  
   " Source config when saved
+  "
   if has("autocmd")
     au! BufWritePost .vimrc,init.vim nested so $MYVIMRC
   en
@@ -120,13 +121,14 @@ if !exists('g:vscode')
       " LSP completion
       Plug 'neovim/nvim-lspconfig'                " LSP configurations for neovim
       Plug 'nvim-lua/completion-nvim'             " Completion engine that support neovim's LSP
+      Plug 'kosayoda/nvim-lightbulb'              " Lightbulb code action
 
       " Rust  
       Plug 'rust-lang/rust.vim'
       Plug 'cespare/vim-toml'
 
       " Prettier
-      Plug 'johanventer/vim-prettier', { 'do': 'yarn install' }
+      Plug 'prettier/vim-prettier', { 'do': 'yarn install' }
 
       " Better Java syntax highlighting
       Plug 'uiiaoo/java-syntax.vim'                   
@@ -137,31 +139,21 @@ if !exists('g:vscode')
       " Status lines and themes
       Plug 'itchyny/lightline.vim'                " Status line
       Plug 'jacoborus/tender.vim'
-      "Plug 'vim-airline/vim-airline-themes'
-      "Plug 'morhetz/gruvbox'
-      "Plug 'rakr/vim-one'
-      "Plug 'ayu-theme/ayu-vim'
-      "Plug 'dempfi/vim-airline-neka'
-      "Plug 'danilo-augusto/vim-afterglow'
-      "Plug 'rainglow/vim'
-      "Plug 'connorholyday/vim-snazzy'
-      "Plug 'sonph/onehalf', {'rtp': 'vim/'}
+      Plug 'drewtempelmeyer/palenight.vim'      
     call plug#end()
 
     "-------------------------------------------------------------------------------------------------
     " Statusline and Colors
     "-------------------------------------------------------------------------------------------------
-    "let ayucolor="mirage"
-    "let g:airline_theme = 'tender'
     if PlugLoaded("tender.vim")
-        colorscheme tender
+        colorscheme palenight
     endif
     
     "-------------------------------------------------------------------------------------------------
     " vim-rooter
     "-------------------------------------------------------------------------------------------------
     if PlugLoaded("vim-rooter")
-      let g:rooter_patterns = ['package.json', '.git', '_darcs', '.hg', '.bzr', '.svn', 'Makefile']
+      let g:rooter_patterns = ['package.json', '.git', '_darcs', '.hg', '.bzr', '.svn', 'Makefile', '.project']
     endif
 
     "-------------------------------------------------------------------------------------------------
@@ -194,31 +186,6 @@ if !exists('g:vscode')
     "-------------------------------------------------------------------------------------------------
     if PlugLoaded("fzf.vim")
       let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6 } }
-
-      " " Custom FZF command for listing all symbols in the current buffer using the LSP
-      " lua <<EOF
-      "   vim.lsp.handlers["textDocument/documentSymbol"] = vim.lsp.with(
-      "     vim.lsp.diagnostic.on_publish_diagnostics, {
-      "       -- Disable signs
-      "      signs = false,
-      "     }
-      "  )
-" EOF
-      " func FormatSymbol(key, val)
-      "   let bufnr = a:val['bufnr']
-      "   let name = bufname(bufnr)
-      "   let text = a:val['text']
-      "   let lnum = a:val['lnum']
-      "   let col = a:val['col']
-      "   return printf("%s[%d:%d]\t%s", name, lnum, col, text)
-      " endfunc
-      " func Symbols()
-      "   luado vim.lsp.buf.document_symbol()
-      "   call fzf#run(fzf#wrap({'source': map(getqflist(), function('FormatSymbol'))}))
-      "   call setqflist([])
-      " endfunc
-      " command! -bang -nargs=* Symbols call Symbols()
-      " nmap <C-g> :Symbols<cr>
 
       " Ctrl-p fuzzy file finder
       nmap <C-p> :Files<CR>
@@ -275,16 +242,10 @@ if !exists('g:vscode')
     " Prettier
     "-------------------------------------------------------------------------------------------------
     if PlugLoaded("vim-prettier")
-      let g:prettier#autoformat = 0
+      let g:prettier#autoformat = 1
       let g:prettier#autoformat_require_pragma = 0
       let g:prettier#quickfix_enabled = 1
       let g:prettier#config#print_width = '80'
-      " let g:prettier#config#trailing_comma = 'none'
-
-      " augroup Prettier
-      "   autocmd!
-      "   autocmd BufWritePre *.js,*.jsx,*.mjs,*.ts,*.tsx,*.css,*.less,*.scss,*.json,*.graphql,*.md,*.vue,*.yaml,*.html PrettierAsync
-      " augroup END
     endif
     
     "-------------------------------------------------------------------------------------------------
@@ -300,6 +261,7 @@ if !exists('g:vscode')
     "-------------------------------------------------------------------------------------------------
     if PlugLoaded("nvim-lspconfig")
       lua <<EOF
+        local util = require 'lspconfig/util'
         local nvim_command = vim.api.nvim_command
           
         local on_attach_vim = function()
@@ -307,13 +269,13 @@ if !exists('g:vscode')
         end
           
         require'lspconfig'.tsserver.setup{on_attach=on_attach_vim}
-        require'lspconfig'.jdtls.setup{on_attach=on_attach_vim}
         require'lspconfig'.rust_analyzer.setup{on_attach=on_attach_vim}
         -- require'lspconfig'.apex_jorje.setup{on_attach=on_attach_vim}
+        require'lspconfig'.jdtls.setup{on_attach = on_attach_vim}
 
         vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
           vim.lsp.diagnostic.on_publish_diagnostics, {
-            virtual_text = true,
+            virtual_text = false,
             signs = true,
             update_in_insert = false,
          }
@@ -353,6 +315,13 @@ EOF
         nnoremap          <f2>  <cmd>lua vim.lsp.buf.rename()<CR>
         nnoremap <silent> <f8>  <cmd>lua vim.lsp.diagnostic.goto_next()<CR>
     endif
+
+    "-------------------------------------------------------------------------------------------------
+    " nvim-lightbulb
+    "-------------------------------------------------------------------------------------------------
+    if PlugLoaded("nvim-lightbulb")
+      autocmd CursorHold,CursorHoldI * lua require'nvim-lightbulb'.update_lightbulb()
+    endif
     
     "-------------------------------------------------------------------------------------------------
     " gnvim - nvim GUI
@@ -362,32 +331,33 @@ EOF
       let g:fzf_layout = { 'down': '~40%' }
     endif
 
-    "-------------------------------------------------------------------------------------------------
-    " WSL specific stuff
-    "-------------------------------------------------------------------------------------------------
-    function! IsWSL()
-      if has("unix")
-        let lines = readfile("/proc/version")
-        if lines[0] =~ "Microsoft"
-          return 1
-        endif
+  endif
+ 
+  "-------------------------------------------------------------------------------------------------
+  " WSL specific stuff
+  "-------------------------------------------------------------------------------------------------
+  function! IsWSL()
+    if has("unix")
+      let lines = readfile("/proc/version")
+      if lines[0] =~ "Microsoft"
+        return 1
       endif
-      return 0
-    endfunction
-
-    if IsWSL()
-      let g:clipboard = {
-                \   'name': 'win32yank-wsl',
-                \   'copy': {
-                \      '+': 'win32yank.exe -i --crlf',
-                \      '*': 'win32yank.exe -i --crlf',
-                \    },
-                \   'paste': {
-                \      '+': 'win32yank.exe -o --lf',
-                \      '*': 'win32yank.exe -o --lf',
-                \   },
-                \   'cache_enabled': 0,
-                \ }
     endif
+    return 0
+  endfunction
+  
+  if IsWSL()
+    let g:clipboard = {
+              \   'name': 'win32yank-wsl',
+              \   'copy': {
+              \      '+': 'win32yank.exe -i --crlf',
+              \      '*': 'win32yank.exe -i --crlf',
+              \    },
+              \   'paste': {
+              \      '+': 'win32yank.exe -o --lf',
+              \      '*': 'win32yank.exe -o --lf',
+              \   },
+              \   'cache_enabled': 0,
+              \ }
   endif
 endif
