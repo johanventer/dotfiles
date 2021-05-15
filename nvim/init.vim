@@ -123,7 +123,10 @@ if !exists('g:vscode')
       Plug 'nvim-lua/completion-nvim'             " Completion engine that support neovim's LSP
       Plug 'kosayoda/nvim-lightbulb'              " Lightbulb code action
       Plug 'RishabhRD/popfix'
-      Plug 'RishabhRD/nvim-lsputils'
+      Plug 'RishabhRD/nvim-lsputils'              " Better popup windows for LSP lists
+      Plug 'folke/lsp-colors.nvim'                " For themes with missing LSP highlight groups
+      Plug 'kyazdani42/nvim-web-devicons'         " File icons
+      Plug 'folke/trouble.nvim'                   " LSP diagnostic list
 
       " Rust  
       Plug 'rust-lang/rust.vim'
@@ -145,13 +148,14 @@ if !exists('g:vscode')
       Plug 'itchyny/lightline.vim'                " Status line
       Plug 'jacoborus/tender.vim'
       Plug 'drewtempelmeyer/palenight.vim'      
+      Plug 'folke/tokyonight.nvim'
     call plug#end()
 
     "-------------------------------------------------------------------------------------------------
     " Statusline and Colors
     "-------------------------------------------------------------------------------------------------
-    if PlugLoaded("palenight.vim")
-        colorscheme palenight
+    if PlugLoaded("tokyonight.nvim")
+        colorscheme tokyonight
     endif
     
     "-------------------------------------------------------------------------------------------------
@@ -284,7 +288,16 @@ if !exists('g:vscode')
         end
           
         require'lspconfig'.tsserver.setup{on_attach=on_attach_vim}
-        require'lspconfig'.rust_analyzer.setup{on_attach=on_attach_vim}
+        require'lspconfig'.rust_analyzer.setup{
+          on_attach = on_attach_vim,
+          settings = { 
+  	        ["rust-analyzer"] = { 
+  		      checkOnSave = {
+  			    command = "clippy"
+  			  } 
+  		    } 
+  	      } 
+        }
         -- require'lspconfig'.apex_jorje.setup{on_attach=on_attach_vim}
         require'lspconfig'.jdtls.setup{on_attach = on_attach_vim}
         require'lspconfig'.ccls.setup{on_attach=on_attach_vim}
@@ -364,10 +377,30 @@ EOF
     endif
 
     "-------------------------------------------------------------------------------------------------
+    " lsptrouble
+    "-------------------------------------------------------------------------------------------------
+    if PlugLoaded("trouble.nvim")
+      lua <<EOF
+        require("trouble").setup {
+          -- your configuration comes here
+          -- or leave it empty to use the default settings
+          -- refer to the configuration section below
+       }
+
+EOF
+    nnoremap <leader>x  <cmd>TroubleToggle<cr>
+    nnoremap <leader>xw <cmd>TroubleToggle lsp_workspace_diagnostics<cr>
+    nnoremap <leader>xd <cmd>TroubleToggle lsp_document_diagnostics<cr>
+    nnoremap <leader>xq <cmd>TroubleToggle quickfix<cr>
+    nnoremap <leader>xl <cmd>TroubleToggle loclist<cr>
+    nnoremap gR <cmd>TroubleToggle lsp_references<cr>
+    endif
+
+    "-------------------------------------------------------------------------------------------------
     " nvim-lightbulb
     "-------------------------------------------------------------------------------------------------
     if PlugLoaded("nvim-lightbulb")
-      autocmd CursorHold,CursorHoldI * lua require'nvim-lightbulb'.update_lightbulb{ sign = { enabled = false }, float = { enabled = true }, virtual_text = { enabled = false } }
+      autocmd CursorHold,CursorHoldI * lua require'nvim-lightbulb'.update_lightbulb{ sign = { enabled = false }, float = { enabled = false }, virtual_text = { enabled = true } }
     endif
     
     "-------------------------------------------------------------------------------------------------
