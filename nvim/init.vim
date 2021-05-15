@@ -128,7 +128,7 @@ if !exists('g:vscode')
       Plug 'cespare/vim-toml'
 
       " Prettier
-      Plug 'johanventer/vim-prettier', { 'do': 'yarn install' }
+      Plug 'prettier/vim-prettier', { 'do': 'yarn install' }
 
       " Clang-format
       Plug 'rhysd/vim-clang-format'
