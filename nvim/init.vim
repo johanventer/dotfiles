@@ -127,6 +127,7 @@ if !exists('g:vscode')
       Plug 'RishabhRD/nvim-lsputils'              " Better popup windows for LSP lists
       Plug 'folke/lsp-colors.nvim'                " For themes with missing LSP highlight groups
       Plug 'folke/trouble.nvim'                   " LSP diagnostic list
+      Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 
       " Rust  
       Plug 'rust-lang/rust.vim'
@@ -441,12 +442,26 @@ EOF
        }
 
 EOF
-    nnoremap <leader>x  <cmd>TroubleToggle<cr>
-    nnoremap <leader>xw <cmd>TroubleToggle lsp_workspace_diagnostics<cr>
-    nnoremap <leader>xd <cmd>TroubleToggle lsp_document_diagnostics<cr>
-    nnoremap <leader>xq <cmd>TroubleToggle quickfix<cr>
-    nnoremap <leader>xl <cmd>TroubleToggle loclist<cr>
-    nnoremap gR <cmd>TroubleToggle lsp_references<cr>
+      nnoremap <leader>x  <cmd>TroubleToggle<cr>
+      nnoremap <leader>xw <cmd>TroubleToggle lsp_workspace_diagnostics<cr>
+      nnoremap <leader>xd <cmd>TroubleToggle lsp_document_diagnostics<cr>
+      nnoremap <leader>xq <cmd>TroubleToggle quickfix<cr>
+      nnoremap <leader>xl <cmd>TroubleToggle loclist<cr>
+      nnoremap gR <cmd>TroubleToggle lsp_references<cr>
+    endif
+    
+    "-------------------------------------------------------------------------------------------------
+    " treesitter
+    "-------------------------------------------------------------------------------------------------
+    if PlugLoaded("nvim-treesitter")
+      lua <<EOF
+        require'nvim-treesitter.configs'.setup {
+          -- ensure_installed = "maintained",
+          highlight = {
+            enable = true
+          },
+        }
+EOF
     endif
 
     "-------------------------------------------------------------------------------------------------
