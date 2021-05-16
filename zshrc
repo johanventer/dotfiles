@@ -32,12 +32,8 @@ alias gnvim="GDK_DPI_SCALE=1.5 gnvim"
 ## X server
 export DISPLAY=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2; exit;}'):0.0
 
-# Java/JDTLS
+# Java
 export JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
-export JAR=/opt/jdtls/plugins/org.eclipse.equinox.launcher_1.6.0.v20200915-1508.jar
-export JDTLS_CONFIG=/opt/jdtls/config_linux
-export WORKSPACE=~/.jdtls/workspace
-export GRADLE_HOME=~/.jdtls/gradle
 
 export EDITOR=nvim
 

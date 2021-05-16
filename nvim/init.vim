@@ -126,6 +126,7 @@ if !exists('g:vscode')
 
       " LSP completion + TreeSitter + other stuff
       Plug 'neovim/nvim-lspconfig'                " LSP configurations for neovim
+      Plug 'kabouzeid/nvim-lspinstall'            " LSP install scripts
       Plug 'nvim-lua/lsp_extensions.nvim'         " LSP extensions (Rust inlays)
       Plug 'nvim-lua/completion-nvim'             " Completion engine that support neovim's LSP
       Plug 'kosayoda/nvim-lightbulb'              " Lightbulb code action
@@ -134,9 +135,6 @@ if !exists('g:vscode')
       Plug 'folke/lsp-colors.nvim'                " For themes with missing LSP highlight groups
       Plug 'folke/trouble.nvim'                   " LSP diagnostic list
       Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
-
-      " Rust (provides rustfmt on autosave and updated filtetype plugin) 
-      Plug 'rust-lang/rust.vim'
 
       " Prettier
       Plug 'prettier/vim-prettier', { 'do': 'yarn install' }
@@ -285,14 +283,6 @@ EOF
     endif
 
     "-------------------------------------------------------------------------------------------------
-    " Rust (using LSP for completion/diagnostics, but this has an up to date
-    " filetype plugin.
-    "-------------------------------------------------------------------------------------------------
-    if PlugLoaded("rust.vim")
-      let g:rustfmt_autosave = 1                  " Format Rust files on save
-    endif
-
-    "-------------------------------------------------------------------------------------------------
     " Prettier
     "-------------------------------------------------------------------------------------------------
     if PlugLoaded("vim-prettier")
@@ -311,39 +301,104 @@ EOF
     endif
     
     "-------------------------------------------------------------------------------------------------
-    " Better Java syntax highlighting
-    "-------------------------------------------------------------------------------------------------
-    if PlugLoaded("java-syntax.vim")
-      " Disable highlighting variables in Java
-      highlight link JavaIdentifier NONE
-    endif
-    
-    "-------------------------------------------------------------------------------------------------
     " LSP completion & diagnostics
     "-------------------------------------------------------------------------------------------------
     if PlugLoaded("nvim-lspconfig")
       lua <<EOF
-        local util = require 'lspconfig/util'
-        local nvim_command = vim.api.nvim_command
-          
-        local on_attach_vim = function()
+        local on_attach = function(client, bufnr)
+          local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
+          local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
+
+          buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
+
+          -- Mappings.
+          local opts = { noremap=true, silent=true }
+          buf_set_keymap('n', '<f11>', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
+          buf_set_keymap('n', 'gd',    '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
+          buf_set_keymap('n', '<f12>', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
+          buf_set_keymap('n', '<c-]>', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
+          buf_set_keymap('n', 'K',     '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
+          buf_set_keymap('n', 'gi',    '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
+          buf_set_keymap('n', '<c-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
+          buf_set_keymap('n', 'gr',    '<cmd>lua vim.lsp.buf.references()<CR>', opts)
+          buf_set_keymap('n', 'g0',    '<cmd>lua vim.lsp.buf.document_symbol()<CR>', opts)
+          buf_set_keymap('n', 'gW',    '<cmd>lua vim.lsp.buf.workspace_symbol()<CR>', opts)
+          buf_set_keymap('n', '<f2>',  '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
+          buf_set_keymap('n', 'ga',    '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
+          buf_set_keymap('n', 'g[',    '<cmd>lua vim.lsp.diagnostic.goto_prev()<CR>', opts)
+          buf_set_keymap('n', 'g]',    '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>', opts)
+          buf_set_keymap('n', '<f8>',  '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>', opts)
+
+          -- Set some keybinds conditional on server capabilities
+          if client.resolved_capabilities.document_formatting then
+            buf_set_keymap("n", "<leader>f", "<cmd>lua vim.lsp.buf.formatting()<CR>", opts)
+
+            -- Use the formatting of the LSP for some languages automatically
+            if client.name == "rust" then
+              vim.api.nvim_exec([[
+                augroup Formatting
+                  autocmd! * <buffer>
+                  autocmd BufWritePre <buffer> lua vim.lsp.buf.formatting()
+                augroup END
+              ]], false)
+            end
+
+          elseif client.resolved_capabilities.document_range_formatting then
+            buf_set_keymap("n", "<leader>f", "<cmd>lua vim.lsp.buf.range_formatting()<CR>", opts)
+          end
+
+         -- Show diagnostics on hover
+          vim.api.nvim_exec([[
+            augroup Diagnostics
+              autocmd! * <buffer>
+              autocmd CursorHold * lua vim.lsp.diagnostic.show_line_diagnostics()
+            augroup END
+          ]], false)
+
+          -- Set autocommands conditional on server_capabilities
+          if client.resolved_capabilities.document_highlight then
+            vim.api.nvim_exec([[
+              augroup lsp_document_highlight
+                autocmd! * <buffer>
+                autocmd CursorHold <buffer> lua vim.lsp.buf.document_highlight()
+                autocmd CursorMoved <buffer> lua vim.lsp.buf.clear_references()
+              augroup END
+            ]], false)
+          end
+
           require'completion'.on_attach()
         end
-          
-        require'lspconfig'.tsserver.setup{on_attach=on_attach_vim}
-        require'lspconfig'.rust_analyzer.setup{
-          on_attach = on_attach_vim,
-          settings = { 
-  	        ["rust-analyzer"] = { 
-  		      checkOnSave = {
-  			    command = "clippy"
-  			  } 
-  		    } 
-  	      } 
+
+        local rust_settings = {
+          ["rust-analyzer"] = { 
+            checkOnSave = {
+              command = "clippy"
+            } 
+          } 
         }
-        -- require'lspconfig'.apex_jorje.setup{on_attach=on_attach_vim}
-        require'lspconfig'.jdtls.setup{on_attach = on_attach_vim}
-        require'lspconfig'.ccls.setup{on_attach=on_attach_vim}
+
+        local function setup_servers()
+          require'lspinstall'.setup()
+  
+          local servers = require'lspinstall'.installed_servers()
+  
+          -- Add manually installed servers here, i.e:
+          -- table.insert(servers, "tsserver")
+  
+          for _, server in pairs(servers) do
+            local config = {
+              on_attach = on_attach
+            }
+
+            if server == "rust" then
+              config.settings = rust_settings
+            end
+
+            require'lspconfig'[server].setup(config)
+          end
+        end
+
+        setup_servers()
 
         vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
           vim.lsp.diagnostic.on_publish_diagnostics, {
@@ -351,20 +406,14 @@ EOF
             signs = true,
             virtual_text = false,
             update_in_insert = false,
-         }
-       )
+          }
+        )
 
-       vim.fn.sign_define("LspDiagnosticsSignError", {text = "", numhl = "LspDiagnosticsDefaultError"})
-       vim.fn.sign_define("LspDiagnosticsSignWarning", {text = "", numhl = "LspDiagnosticsDefaultWarning"})
-       vim.fn.sign_define("LspDiagnosticsSignInformation", {text = "", numhl = "LspDiagnosticsDefaultInformation"})
-       vim.fn.sign_define("LspDiagnosticsSignHint", {text = "", numhl = "LspDiagnosticsDefaultHint"})
+        vim.fn.sign_define("LspDiagnosticsSignError", {text = "", numhl = "LspDiagnosticsDefaultError"})
+        vim.fn.sign_define("LspDiagnosticsSignWarning", {text = "", numhl = "LspDiagnosticsDefaultWarning"})
+        vim.fn.sign_define("LspDiagnosticsSignInformation", {text = "", numhl = "LspDiagnosticsDefaultInformation"})
+        vim.fn.sign_define("LspDiagnosticsSignHint", {text = "", numhl = "LspDiagnosticsDefaultHint"})
 EOF
-
-      " Show diagnostics on hover
-      augroup Diagnostics
-        autocmd!
-        autocmd CursorHold * lua vim.lsp.diagnostic.show_line_diagnostics()
-      augroup END
 
       function! s:check_back_space() abort
         let col = col('.') - 1
@@ -380,23 +429,6 @@ EOF
         \ pumvisible() ? "\<C-n>" :
         \ <SID>check_back_space() ? "\<TAB>" :
         \ completion#trigger_completion()
-
-      " LSP mappings
-      nnoremap <silent> <f11> <cmd>lua vim.lsp.buf.declaration()<CR>
-      nnoremap <silent> gd    <cmd>lua vim.lsp.buf.declaration()<CR>
-      nnoremap <silent> <f12> <cmd>lua vim.lsp.buf.definition()<CR>
-      nnoremap <silent> <c-]> <cmd>lua vim.lsp.buf.definition()<CR>
-      nnoremap <silent> K     <cmd>lua vim.lsp.buf.hover()<CR>
-      nnoremap <silent> gD    <cmd>lua vim.lsp.buf.implementation()<CR>
-      nnoremap <silent> <c-k> <cmd>lua vim.lsp.buf.signature_help()<CR>
-      nnoremap <silent> gr    <cmd>lua vim.lsp.buf.references()<CR>
-      nnoremap <silent> g0    <cmd>lua vim.lsp.buf.document_symbol()<CR>
-      nnoremap <silent> gW    <cmd>lua vim.lsp.buf.workspace_symbol()<CR>
-      nnoremap          <f2>  <cmd>lua vim.lsp.buf.rename()<CR>
-      nnoremap <silent> ga    <cmd>lua vim.lsp.buf.code_action()<CR>
-      nnoremap <silent> <f8>  <cmd>lua vim.lsp.diagnostic.goto_next()<CR>
-      nnoremap <silent> g[ <cmd>lua vim.lsp.diagnostic.goto_prev()<CR>
-      nnoremap <silent> g] <cmd>lua vim.lsp.diagnostic.goto_next()<CR>
     endif
     
     "-------------------------------------------------------------------------------------------------
