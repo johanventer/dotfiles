@@ -102,7 +102,8 @@ if !exists('g:vscode')
       Plug 'djoshea/vim-autoread'                     
       
       " NERDTree file browser
-      Plug 'scrooloose/nerdtree'
+      " Plug 'scrooloose/nerdtree'
+      Plug 'kyazdani42/nvim-tree.lua'
 
       " FZF fuzzy finder
       Plug 'junegunn/fzf'
@@ -125,7 +126,6 @@ if !exists('g:vscode')
       Plug 'RishabhRD/popfix'
       Plug 'RishabhRD/nvim-lsputils'              " Better popup windows for LSP lists
       Plug 'folke/lsp-colors.nvim'                " For themes with missing LSP highlight groups
-      Plug 'kyazdani42/nvim-web-devicons'         " File icons
       Plug 'folke/trouble.nvim'                   " LSP diagnostic list
 
       " Rust  
@@ -144,20 +144,54 @@ if !exists('g:vscode')
       " Apex ftplugin and syntax highlighting
       Plug 'ejholmes/vim-forcedotcom'
 
-      " Status lines and themes
-      Plug 'itchyny/lightline.vim'                " Status line
+      " Status lines 
+      Plug 'kyazdani42/nvim-web-devicons'         " File icons
+      Plug 'hoob3rt/lualine.nvim'                 " Status line
+
+      " Themes I like
+      Plug 'folke/tokyonight.nvim'
       Plug 'jacoborus/tender.vim'
       Plug 'drewtempelmeyer/palenight.vim'      
-      Plug 'folke/tokyonight.nvim'
     call plug#end()
 
     "-------------------------------------------------------------------------------------------------
     " Statusline and Colors
     "-------------------------------------------------------------------------------------------------
     if PlugLoaded("tokyonight.nvim")
-        colorscheme tokyonight
+      colorscheme tokyonight
     endif
-    
+    if PlugLoaded("lualine.nvim")
+        lua <<EOF
+          require'lualine'.setup {
+            options = {
+              icons_enabled = true,
+              theme = 'tokyonight',
+              component_separators = {'', ''},
+              section_separators = {'', ''},
+              disabled_filetypes = {}
+            },
+            sections = {
+              lualine_a = {'mode'},
+              lualine_b = {'branch'},
+              lualine_c = {'filename'},
+              lualine_x = {'encoding', 'fileformat', 'filetype'},
+              lualine_y = {'progress'},
+              lualine_z = {'location'}
+            },
+            inactive_sections = {
+              lualine_a = {},
+              lualine_b = {},
+              lualine_c = {'filename'},
+              lualine_x = {'location'},
+              lualine_y = {},
+              lualine_z = {}
+            },
+            tabline = {},
+            extensions = {'fzf', 'nerdtree', 'quickfix'}
+          }
+EOF
+    endif
+
     "-------------------------------------------------------------------------------------------------
     " vim-rooter
     "-------------------------------------------------------------------------------------------------
@@ -174,11 +208,24 @@ if !exists('g:vscode')
         autocmd BufReadPost *  DetectIndent
       augroup END
     endif
+    "
+    "-------------------------------------------------------------------------------------------------
+    " nvim-tree
+    "-------------------------------------------------------------------------------------------------
+    if PlugLoaded("nvim-tree.lua")
+      " Toggle file browser
+      nmap <leader>b :NvimTreeToggle<CR>
+  
+      " Find current file in file browser
+      nmap <leader>B :NvimTreeFindFile<CR>
+    endif
     
     "-------------------------------------------------------------------------------------------------
     " NERDTree - file browser
     "-------------------------------------------------------------------------------------------------
     if PlugLoaded("nerdtree")
+      echo "Hello"
+
       " Show hidden files in nerdtree
       let NERDTreeShowHidden=1
       let NERDTreeMinimalUI = 1
@@ -304,11 +351,17 @@ if !exists('g:vscode')
 
         vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
           vim.lsp.diagnostic.on_publish_diagnostics, {
-            virtual_text = false,
+            underline = true,
             signs = true,
+            virtual_text = false,
             update_in_insert = false,
          }
        )
+
+       vim.fn.sign_define("LspDiagnosticsSignError", {text = "", numhl = "LspDiagnosticsDefaultError"})
+       vim.fn.sign_define("LspDiagnosticsSignWarning", {text = "", numhl = "LspDiagnosticsDefaultWarning"})
+       vim.fn.sign_define("LspDiagnosticsSignInformation", {text = "", numhl = "LspDiagnosticsDefaultInformation"})
+       vim.fn.sign_define("LspDiagnosticsSignHint", {text = "", numhl = "LspDiagnosticsDefaultHint"})
 EOF
 
       " Show diagnostics on hover
@@ -400,7 +453,10 @@ EOF
     " nvim-lightbulb
     "-------------------------------------------------------------------------------------------------
     if PlugLoaded("nvim-lightbulb")
-      autocmd CursorHold,CursorHoldI * lua require'nvim-lightbulb'.update_lightbulb{ sign = { enabled = false }, float = { enabled = false }, virtual_text = { enabled = true } }
+      lua <<EOF
+        vim.fn.sign_define("LightBulbSign", {text = " ", numhl = "LspDiagnosticsDefaultInformation"})
+EOF
+      autocmd CursorHold,CursorHoldI * lua require'nvim-lightbulb'.update_lightbulb{ sign = { priority = 1 } }
     endif
     
     "-------------------------------------------------------------------------------------------------
