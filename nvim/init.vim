@@ -118,7 +118,13 @@ if !exists('g:vscode')
       " Quickly toggle quickfix
       Plug 'drmingdrmer/vim-toggle-quickfix'
 
-      " LSP completion
+      " Icons
+      Plug 'kyazdani42/nvim-web-devicons' 
+      
+      " Status lines
+      Plug 'hoob3rt/lualine.nvim' 
+
+      " LSP completion + TreeSitter + other stuff
       Plug 'neovim/nvim-lspconfig'                " LSP configurations for neovim
       Plug 'nvim-lua/lsp_extensions.nvim'         " LSP extensions (Rust inlays)
       Plug 'nvim-lua/completion-nvim'             " Completion engine that support neovim's LSP
@@ -129,25 +135,14 @@ if !exists('g:vscode')
       Plug 'folke/trouble.nvim'                   " LSP diagnostic list
       Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 
-      " Rust  
+      " Rust (provides rustfmt on autosave and updated filtetype plugin) 
       Plug 'rust-lang/rust.vim'
-      Plug 'cespare/vim-toml'
 
       " Prettier
       Plug 'prettier/vim-prettier', { 'do': 'yarn install' }
 
       " Clang-format
       Plug 'rhysd/vim-clang-format'
-
-      " Better Java syntax highlighting
-      Plug 'uiiaoo/java-syntax.vim'                   
-
-      " Apex ftplugin and syntax highlighting
-      Plug 'ejholmes/vim-forcedotcom'
-
-      " Status lines 
-      Plug 'kyazdani42/nvim-web-devicons'         " File icons
-      Plug 'hoob3rt/lualine.nvim'                 " Status line
 
       " Themes I like
       Plug 'folke/tokyonight.nvim'
@@ -456,7 +451,7 @@ EOF
     if PlugLoaded("nvim-treesitter")
       lua <<EOF
         require'nvim-treesitter.configs'.setup {
-          -- ensure_installed = "maintained",
+          ensure_installed = "maintained",
           highlight = {
             enable = true
           },
