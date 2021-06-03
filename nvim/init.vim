@@ -23,8 +23,8 @@ if !exists('g:vscode')
   set sessionoptions+=globals                 " Include global variables in sessions saved with mksession
   set backspace=indent,eol,start              " Allow backspace everywhere
   set clipboard+=unnamed,unnamedplus          " Use the system clipboard by default for yank/delete/paste
-  "set shortmess+=c                            " Avoid displaying insert completion messages
-  set completeopt=noinsert,menuone            " Sets the behaviour of the autocompletion menu
+  set shortmess+=c                            " Avoid displaying insert completion messages
+  set completeopt=menuone,noselect            " Sets the behaviour of the autocompletion menu
   set inccommand=nosplit                      " Preview substitutions
  
   " Source config when saved
@@ -129,7 +129,8 @@ if !exists('g:vscode')
       Plug 'neovim/nvim-lspconfig'                " LSP configurations for neovim
       Plug 'kabouzeid/nvim-lspinstall'            " LSP install scripts
       Plug 'nvim-lua/lsp_extensions.nvim'         " LSP extensions (Rust inlays)
-      Plug 'nvim-lua/completion-nvim'             " Completion engine that support neovim's LSP
+      " Plug 'nvim-lua/completion-nvim'             " Completion engine that support neovim's LSP
+      Plug 'hrsh7th/nvim-compe'                   " Completion engine
       Plug 'kosayoda/nvim-lightbulb'              " Lightbulb code action
       Plug 'RishabhRD/popfix'
       Plug 'RishabhRD/nvim-lsputils'              " Better popup windows for LSP lists
@@ -287,10 +288,11 @@ EOF
     " Prettier
     "-------------------------------------------------------------------------------------------------
     if PlugLoaded("vim-prettier")
-      let g:prettier#autoformat = 0
+      let g:prettier#autoformat = 1
       let g:prettier#autoformat_require_pragma = 0
       let g:prettier#quickfix_enabled = 1
       let g:prettier#config#print_width = '80'
+      let g:prettier#config#tab_width = '2'
     endif
     
     "-------------------------------------------------------------------------------------------------
@@ -332,7 +334,7 @@ EOF
 
           -- Set some keybinds conditional on server capabilities
           if client.resolved_capabilities.document_formatting then
-            buf_set_keymap("n", "<leader>f", "<cmd>lua vim.lsp.buf.formatting()<CR>", opts)
+            buf_set_keymap("n", "<leader>F", "<cmd>lua vim.lsp.buf.formatting()<CR>", opts)
 
             -- Use the formatting of the LSP for some languages automatically
             if client.name == "rust" then
@@ -345,7 +347,7 @@ EOF
             end
 
           elseif client.resolved_capabilities.document_range_formatting then
-            buf_set_keymap("n", "<leader>f", "<cmd>lua vim.lsp.buf.range_formatting()<CR>", opts)
+            buf_set_keymap("n", "<leader>F", "<cmd>lua vim.lsp.buf.range_formatting()<CR>", opts)
           end
 
          -- Show diagnostics on hover
@@ -367,16 +369,8 @@ EOF
             ]], false)
           end
 
-          require'completion'.on_attach()
+          -- require'completion'.on_attach()
         end
-
-        local rust_settings = {
-          ["rust-analyzer"] = { 
-            checkOnSave = {
-              command = "clippy"
-            } 
-          } 
-        }
 
         local function setup_servers()
           require'lspinstall'.setup()
@@ -392,7 +386,26 @@ EOF
             }
 
             if server == "rust" then
-              config.settings = rust_settings
+              local capabilities = vim.lsp.protocol.make_client_capabilities()
+              capabilities.textDocument.completion.completionItem.snippetSupport = true
+              capabilities.textDocument.completion.completionItem.resolveSupport = {
+                properties = {
+                  'documentation',
+                  'detail',
+                  'additionalTextEdits',
+                }
+              }
+
+              local settings = {
+                ["rust-analyzer"] = { 
+                  checkOnSave = {
+                    command = "clippy"
+                  } 
+                } 
+              }
+
+              config.settings = settings
+              config.capabilities = capabilities
             end
 
             require'lspconfig'[server].setup(config)
@@ -416,20 +429,101 @@ EOF
         vim.fn.sign_define("LspDiagnosticsSignHint", {text = "", numhl = "LspDiagnosticsDefaultHint"})
 EOF
 
-      function! s:check_back_space() abort
-        let col = col('.') - 1
-        return !col || getline('.')[col - 1]  =~ '\s'
-      endfunction
+      " function! s:check_back_space() abort
+      "   let col = col('.') - 1
+      "   return !col || getline('.')[col - 1]  =~ '\s'
+      " endfunction
 
-      " Use <Tab> and <S-Tab> to navigate through popup menu
-      inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
-      inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+      " " Use <Tab> and <S-Tab> to navigate through popup menu
+      " inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
+      " inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 
-      " Use TAB as a completion trigger key
-      inoremap <silent><expr> <TAB>
-        \ pumvisible() ? "\<C-n>" :
-        \ <SID>check_back_space() ? "\<TAB>" :
-        \ completion#trigger_completion()
+      " " Use TAB as a completion trigger key
+      " inoremap <silent><expr> <TAB>
+      "   \ pumvisible() ? "\<C-n>" :
+      "   \ <SID>check_back_space() ? "\<TAB>" :
+      "   \ completion#trigger_completion()
+    endif
+
+    "-------------------------------------------------------------------------------------------------
+    " nvim-compe
+    "-------------------------------------------------------------------------------------------------
+    if PlugLoaded("nvim-compe")
+    lua <<EOF
+      require'compe'.setup {
+        enabled = true;
+        autocomplete = true;
+        debug = false;
+        min_length = 1;
+        preselect = 'enable';
+        throttle_time = 80;
+        source_timeout = 200;
+        incomplete_delay = 400;
+        max_abbr_width = 100;
+        max_kind_width = 100;
+        max_menu_width = 100;
+        documentation = true;
+
+        source = {
+          path = true;
+          buffer = true;
+          calc = true;
+          nvim_lsp = true;
+          nvim_lua = true;
+          nvim_treesitter = true;
+          vsnip = false;
+          ultisnips = false;
+        };
+      }
+
+      local t = function(str)
+        return vim.api.nvim_replace_termcodes(str, true, true, true)
+      end
+
+      local check_back_space = function()
+          local col = vim.fn.col('.') - 1
+          if col == 0 or vim.fn.getline('.'):sub(col, col):match('%s') then
+              return true
+          else
+              return false
+          end
+      end
+
+      -- Use (s-)tab to:
+      --- move to prev/next item in completion menuone
+      --- jump to prev/next snippet's placeholder
+      _G.tab_complete = function()
+        if vim.fn.pumvisible() == 1 then
+          return t "<C-n>"
+        --elseif vim.fn.call("vsnip#available", {1}) == 1 then
+        --  return t "<Plug>(vsnip-expand-or-jump)"
+        elseif check_back_space() then
+          return t "<Tab>"
+        else
+          return vim.fn['compe#complete']()
+        end
+      end
+      _G.s_tab_complete = function()
+        if vim.fn.pumvisible() == 1 then
+          return t "<C-p>"
+        --elseif vim.fn.call("vsnip#jumpable", {-1}) == 1 then
+        --  return t "<Plug>(vsnip-jump-prev)"
+        else
+          -- If <S-Tab> is not working in your terminal, change it to <C-h>
+          return t "<S-Tab>"
+        end
+      end
+
+      vim.api.nvim_set_keymap("i", "<Tab>", "v:lua.tab_complete()", {expr = true})
+      vim.api.nvim_set_keymap("s", "<Tab>", "v:lua.tab_complete()", {expr = true})
+      vim.api.nvim_set_keymap("i", "<S-Tab>", "v:lua.s_tab_complete()", {expr = true})
+      vim.api.nvim_set_keymap("s", "<S-Tab>", "v:lua.s_tab_complete()", {expr = true})
+EOF
+      inoremap <silent><expr> <C-Space> compe#complete()
+      inoremap <silent><expr> <CR>      compe#confirm('<CR>')
+      inoremap <silent><expr> <C-e>     compe#close('<C-e>')
+      inoremap <silent><expr> <C-f>     compe#scroll({ 'delta': +4 })
+      inoremap <silent><expr> <C-d>     compe#scroll({ 'delta': -4 })
     endif
     
     "-------------------------------------------------------------------------------------------------

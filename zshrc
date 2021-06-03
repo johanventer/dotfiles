@@ -31,6 +31,7 @@ alias gnvim="GDK_DPI_SCALE=1.5 gnvim"
 
 ## X server
 export DISPLAY=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2; exit;}'):0.0
+export LIBGL_ALWAYS_INDIRECT=1
 
 # Java
 export JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
