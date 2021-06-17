@@ -94,7 +94,7 @@ if !exists('g:vscode')
       Plug 'airblade/vim-rooter'                    
       
       " Better buffer management (don't close windows when deleting buffers)
-      Plug 'qpkorr/vim-bufkill'               
+      " Plug 'qpkorr/vim-bufkill'               
 
       " Indent and tab/space detection
       Plug 'roryokane/detectindent'
@@ -102,8 +102,7 @@ if !exists('g:vscode')
       " Auto reload files when they change
       Plug 'djoshea/vim-autoread'                     
       
-      " NERDTree file browser
-      " Plug 'scrooloose/nerdtree'
+      " File browser
       Plug 'kyazdani42/nvim-tree.lua'
 
       " FZF fuzzy finder
@@ -129,14 +128,18 @@ if !exists('g:vscode')
       Plug 'neovim/nvim-lspconfig'                " LSP configurations for neovim
       Plug 'kabouzeid/nvim-lspinstall'            " LSP install scripts
       Plug 'nvim-lua/lsp_extensions.nvim'         " LSP extensions (Rust inlays)
-      " Plug 'nvim-lua/completion-nvim'             " Completion engine that support neovim's LSP
       Plug 'hrsh7th/nvim-compe'                   " Completion engine
       Plug 'kosayoda/nvim-lightbulb'              " Lightbulb code action
-      Plug 'RishabhRD/popfix'
-      Plug 'RishabhRD/nvim-lsputils'              " Better popup windows for LSP lists
+      " Plug 'RishabhRD/popfix'
+      " Plug 'RishabhRD/nvim-lsputils'              " Better popup windows for LSP lists
       Plug 'folke/lsp-colors.nvim'                " For themes with missing LSP highlight groups
       Plug 'folke/trouble.nvim'                   " LSP diagnostic list
       Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+
+      " Telescope
+      Plug 'nvim-lua/popup.nvim'
+      Plug 'nvim-lua/plenary.nvim'
+      Plug 'nvim-telescope/telescope.nvim'
 
       " Prettier
       Plug 'prettier/vim-prettier', { 'do': 'yarn install' }
@@ -145,6 +148,7 @@ if !exists('g:vscode')
       Plug 'rhysd/vim-clang-format'
 
       " Themes I like
+      Plug 'navarasu/onedark.nvim'
       Plug 'folke/tokyonight.nvim'
       Plug 'jacoborus/tender.vim'
       Plug 'drewtempelmeyer/palenight.vim'      
@@ -153,15 +157,15 @@ if !exists('g:vscode')
     "-------------------------------------------------------------------------------------------------
     " Statusline and Colors
     "-------------------------------------------------------------------------------------------------
-    if PlugLoaded("tokyonight.nvim")
-      colorscheme tokyonight
+    if PlugLoaded("onedark.nvim")
+      colorscheme onedark
     endif
     if PlugLoaded("lualine.nvim")
         lua <<EOF
           require'lualine'.setup {
             options = {
               icons_enabled = true,
-              theme = 'tokyonight',
+              theme = 'onedark',
               component_separators = {'', ''},
               section_separators = {'', ''},
               disabled_filetypes = {}
@@ -232,23 +236,38 @@ EOF
       " Find current file in file browser
       nmap <leader>B :NERDTreeFind<CR>
     endif
+    
+    "-------------------------------------------------------------------------------------------------
+    " Telescope
+    "-------------------------------------------------------------------------------------------------
+    if PlugLoaded("telescope.nvim")
+      " Ctrl-p fuzzy file finder
+      nmap <C-p> :Telescope find_files<CR>
+
+      " Buffers
+      nmap <f1> :Telescope buffers<cr>
+  
+      " Find in project
+      nmap <leader>f :Telescope live_grep<CR>
+      nmap <leader>F :Telescope grep_string<CR>
+    endif
 
     "-------------------------------------------------------------------------------------------------
     " FZF - fuzzy finder
     "-------------------------------------------------------------------------------------------------
-    if PlugLoaded("fzf.vim")
-      let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6 } }
+    " if PlugLoaded("fzf.vim")
+    "   let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6 } }
 
-      " Ctrl-p fuzzy file finder
-      nmap <C-p> :Files<CR>
+    "   " Ctrl-p fuzzy file finder
+    "   nmap <C-p> :Files<CR>
 
-      " Buffers
-      nmap <f1> :Buffers<cr>
+    "   " Buffers
+    "   nmap <f1> :Buffers<cr>
   
-      " Find in project
-      nmap <leader>f :Rg<space>
-      nmap <leader>F :Rg <C-R><C-W><CR>
-    endif
+    "   " Find in project
+    "   nmap <leader>f :Rg<space>
+    "   nmap <leader>F :Rg <C-R><C-W><CR>
+    " endif
 
     "-------------------------------------------------------------------------------------------------
     " vim-commentary - automatic commenting
