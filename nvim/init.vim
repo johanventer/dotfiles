@@ -130,11 +130,11 @@ if !exists('g:vscode')
       Plug 'nvim-lua/lsp_extensions.nvim'         " LSP extensions (Rust inlays)
       Plug 'hrsh7th/nvim-compe'                   " Completion engine
       Plug 'kosayoda/nvim-lightbulb'              " Lightbulb code action
-      " Plug 'RishabhRD/popfix'
-      " Plug 'RishabhRD/nvim-lsputils'              " Better popup windows for LSP lists
+      Plug 'RishabhRD/popfix'
+      Plug 'RishabhRD/nvim-lsputils'              " Better popup windows for LSP lists
       Plug 'folke/lsp-colors.nvim'                " For themes with missing LSP highlight groups
       Plug 'folke/trouble.nvim'                   " LSP diagnostic list
-      Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+      " Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 
       " Telescope
       Plug 'nvim-lua/popup.nvim'
@@ -373,7 +373,7 @@ EOF
           vim.api.nvim_exec([[
             augroup Diagnostics
               autocmd! * <buffer>
-              autocmd CursorHold * lua vim.lsp.diagnostic.show_line_diagnostics()
+              autocmd CursorHold * lua vim.lsp.diagnostic.show_line_diagnostics({ focusable = false })
             augroup END
           ]], false)
 
