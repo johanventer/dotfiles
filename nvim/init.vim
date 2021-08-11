@@ -134,7 +134,7 @@ if !exists('g:vscode')
       Plug 'RishabhRD/nvim-lsputils'              " Better popup windows for LSP lists
       Plug 'folke/lsp-colors.nvim'                " For themes with missing LSP highlight groups
       Plug 'folke/trouble.nvim'                   " LSP diagnostic list
-      " Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+      "Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 
       " Telescope
       Plug 'nvim-lua/popup.nvim'
@@ -147,25 +147,45 @@ if !exists('g:vscode')
       " Clang-format
       Plug 'rhysd/vim-clang-format'
 
+      " GraphQL syntax highlighting
+      Plug 'jparise/vim-graphql'
+
       " Themes I like
+      "Plug 'folke/tokyonight.nvim'
+      "Plug 'jacoborus/tender.vim'
+      "Plug 'drewtempelmeyer/palenight.vim'      
       Plug 'navarasu/onedark.nvim'
-      Plug 'folke/tokyonight.nvim'
-      Plug 'jacoborus/tender.vim'
-      Plug 'drewtempelmeyer/palenight.vim'      
+      "Plug 'yashguptaz/calvera-dark.nvim'
     call plug#end()
 
     "-------------------------------------------------------------------------------------------------
     " Statusline and Colors
     "-------------------------------------------------------------------------------------------------
     if PlugLoaded("onedark.nvim")
+      let g:lualine_theme = "onedark"
       colorscheme onedark
+    endif
+    if PlugLoaded("calvera-dark.nvim")
+      let g:lualine_theme = "calvera-nvim"
+      lua <<EOF
+        vim.g.calvera_italic_comments = true
+        vim.g.calvera_italic_keywords = false
+        vim.g.calvera_italic_functions = false
+        vim.g.calvera_italic_variables = false
+        vim.g.calvera_contrast = true
+        vim.g.calvera_lighter_contrast = true
+        vim.g.calvera_borders = true
+        vim.g.calvera_disable_background = false
+        -- vim.g.calvera_custom_colors = { black = "#000000", bg = "#151536" }
+        require('calvera').set()
+EOF
     endif
     if PlugLoaded("lualine.nvim")
         lua <<EOF
           require'lualine'.setup {
             options = {
               icons_enabled = true,
-              theme = 'onedark',
+              theme = vim.g.lualine_theme,
               component_separators = {'', ''},
               section_separators = {'', ''},
               disabled_filetypes = {}

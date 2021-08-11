@@ -45,5 +45,9 @@ function set_win_title() {
 }
 precmd_functions+=(set_win_title)
 
+# Jabba
+[ -s "/home/johan/.jabba/jabba.sh" ] && source "/home/johan/.jabba/jabba.sh"
+
 ## Starship!
 eval "$(starship init zsh)"
+
