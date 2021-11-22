@@ -1,37 +1,82 @@
 " Disable plugins, leaving only basic nvim configuration
 " let g:no_plugins = 1
 
-" If using the neovim integration in VS Code, do not load any of our config
+" -------------------------------------------------------------------------------------------------
+" Basics
+" -------------------------------------------------------------------------------------------------
+set termguicolors                           " Enable 24bit color  
+set nowrap                                  " Disable wrapping by default
+set hidden                                  " Allow hidden buffers
+set mouse=a                                 " Enable mouse support
+set number numberwidth=4                    " Enable line numbers
+set ts=4 sts=4 sw=4 expandtab               " Insert spaces for tabs and set the width
+set textwidth=119                           " Specifies the width of inserted text
+set cmdheight=1                             " Single line commands
+set updatetime=300                          " Time before writing to swap file (ms)
+set signcolumn=yes                          " Always draw the sign column (gutter indicators)
+set ignorecase                              " Ignore search case, needs to be on for smartcase to work
+set smartcase                               " Ignore search case unless there is a capital in the term
+set linespace=3                             " Insert a number of pixels between lines (for underlining)
+set cursorline                              " Highlight the line the cursor is currently on
+set sessionoptions+=globals                 " Include global variables in sessions saved with mksession
+set backspace=indent,eol,start              " Allow backspace everywhere
+set clipboard+=unnamed,unnamedplus          " Use the system clipboard by default for yank/delete/paste
+set shortmess+=c                            " Avoid displaying insert completion messages
+set completeopt=menuone,noselect            " Sets the behaviour of the autocompletion menu
+ 
+" Source config when saved
+if has("autocmd")
+  au! BufWritePost .vimrc,init.vim nested so $MYVIMRC
+en
+
+" -------------------------------------------------------------------------------------------------
+" Key Mappings
+" -------------------------------------------------------------------------------------------------
+let mapleader=' '                        
+
+" Edit vimrc
+nmap <leader>v :execute "vsplit" $MYVIMRC<cr> 
+
+" Split vertically
+nmap <leader>\ :vsplit<cr> :wincmd l<cr>
+
+" Split horizontally
+nmap <leader>% :split<cr> :wincmd j<cr>
+
+"-------------------------------------------------------------------------------------------------
+" WSL Clipboard
+"-------------------------------------------------------------------------------------------------
+function! IsWSL()
+  if has("unix") && filereadable("/proc/version")
+    let lines = readfile("/proc/version")
+    if lines[0] =~ "Microsoft"
+      return 1
+    endif
+  endif
+  return 0
+endfunction
+
+if IsWSL()
+  let g:clipboard = {
+            \   'name': 'win32yank-wsl',
+            \   'copy': {
+            \      '+': '/home/johan/bin/win32yank.exe -i --crlf',
+            \      '*': '/home/johan/bin/win32yank.exe -i --crlf',
+            \    },
+            \   'paste': {
+            \      '+': '/home/johan/bin/win32yank.exe -o --lf',
+            \      '*': '/home/johan/bin/win32yank.exe -o --lf',
+            \   },
+            \   'cache_enabled': 0,
+            \ }
+endif
+
 if !exists('g:vscode')
   " -------------------------------------------------------------------------------------------------
   " Basics
   " -------------------------------------------------------------------------------------------------
-  set termguicolors                           " Enable 24bit color  
-  set nowrap                                  " Disable wrapping by default
-  set hidden                                  " Allow hidden buffers
-  set mouse=a                                 " Enable mouse support
-  set number numberwidth=4                    " Enable line numbers
-  set ts=4 sts=4 sw=4 expandtab               " Insert spaces for tabs and set the width
-  set textwidth=119                           " Specifies the width of inserted text
-  set cmdheight=1                             " Single line commands
-  set updatetime=300                          " Time before writing to swap file (ms)
-  set signcolumn=yes                          " Always draw the sign column (gutter indicators)
-  set ignorecase                              " Ignore search case, needs to be on for smartcase to work
-  set smartcase                               " Ignore search case unless there is a capital in the term
-  set linespace=3                             " Insert a number of pixels between lines (for underlining)
-  set cursorline                              " Highlight the line the cursor is currently on
-  set sessionoptions+=globals                 " Include global variables in sessions saved with mksession
-  set backspace=indent,eol,start              " Allow backspace everywhere
-  set clipboard+=unnamed,unnamedplus          " Use the system clipboard by default for yank/delete/paste
-  set shortmess+=c                            " Avoid displaying insert completion messages
-  set completeopt=menuone,noselect            " Sets the behaviour of the autocompletion menu
+
   set inccommand=nosplit                      " Preview substitutions
- 
-  " Source config when saved
-  "
-  if has("autocmd")
-    au! BufWritePost .vimrc,init.vim nested so $MYVIMRC
-  en
 
   " Copy into X11 PRIMARY when releasing the mousebutton in visual mode (for copy on select)
   " and stay in visual mode
@@ -44,22 +89,6 @@ if !exists('g:vscode')
   " -------------------------------------------------------------------------------------------------
   " Key Mappings
   " -------------------------------------------------------------------------------------------------
-  let mapleader=' '                        
-
-  " Edit vimrc
-  nmap <leader>v :execute "vsplit" $MYVIMRC<cr> 
-
-  " Split vertically
-  nmap <leader>\ :vsplit<cr> :wincmd l<cr>
-
-  " Split horizontally
-  nmap <leader>% :split<cr> :wincmd j<cr>
-
-  " Delete buffer
-  nmap <C-q>     :BD<cr> 
-
-  " Write
-  nmap <C-s>     :w<cr>
 
   " Navigate quicklist
   nmap <f9>         :cn<cr>
@@ -105,10 +134,6 @@ if !exists('g:vscode')
       " File browser
       Plug 'kyazdani42/nvim-tree.lua'
 
-      " FZF fuzzy finder
-      Plug 'junegunn/fzf'
-      Plug 'junegunn/fzf.vim'
-      
       " Automatic commenting
       Plug 'tpope/vim-commentary'
       
@@ -134,7 +159,7 @@ if !exists('g:vscode')
       Plug 'RishabhRD/nvim-lsputils'              " Better popup windows for LSP lists
       Plug 'folke/lsp-colors.nvim'                " For themes with missing LSP highlight groups
       Plug 'folke/trouble.nvim'                   " LSP diagnostic list
-      "Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+      Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 
       " Telescope
       Plug 'nvim-lua/popup.nvim'
@@ -142,13 +167,13 @@ if !exists('g:vscode')
       Plug 'nvim-telescope/telescope.nvim'
 
       " Prettier
-      Plug 'prettier/vim-prettier', { 'do': 'yarn install' }
+      Plug 'prettier/vim-prettier', { 'do': 'npm install' }
 
       " Clang-format
-      Plug 'rhysd/vim-clang-format'
+      " Plug 'rhysd/vim-clang-format'
 
       " GraphQL syntax highlighting
-      Plug 'jparise/vim-graphql'
+      " Plug 'jparise/vim-graphql'
 
       " Themes I like
       "Plug 'folke/tokyonight.nvim'
@@ -228,11 +253,43 @@ EOF
         autocmd BufReadPost *  DetectIndent
       augroup END
     endif
-    "
+    
     "-------------------------------------------------------------------------------------------------
     " nvim-tree
     "-------------------------------------------------------------------------------------------------
     if PlugLoaded("nvim-tree.lua")
+      lua <<EOF
+        require'nvim-tree'.setup {
+          disable_netrw       = true,
+          hijack_netrw        = true,
+          open_on_setup       = false,
+          ignore_ft_on_setup  = {},
+          auto_close          = false,
+          open_on_tab         = false,
+          hijack_cursor       = false,
+          update_cwd          = false,
+          lsp_diagnostics     = false,
+          update_focused_file = {
+            enable      = false,
+            update_cwd  = false,
+            ignore_list = {}
+          },
+          system_open = {
+            cmd  = nil,
+            args = {}
+          },
+          view = {
+            width = 30,
+            side = 'left',
+            auto_resize = false,
+            mappings = {
+              custom_only = false,
+              list = {}
+           }
+         }
+       }
+EOF
+
       " Toggle file browser
       nmap <leader>b :NvimTreeToggle<CR>
   
@@ -244,8 +301,6 @@ EOF
     " NERDTree - file browser
     "-------------------------------------------------------------------------------------------------
     if PlugLoaded("nerdtree")
-      echo "Hello"
-
       " Show hidden files in nerdtree
       let NERDTreeShowHidden=1
       let NERDTreeMinimalUI = 1
@@ -271,23 +326,6 @@ EOF
       nmap <leader>f :Telescope live_grep<CR>
       nmap <leader>F :Telescope grep_string<CR>
     endif
-
-    "-------------------------------------------------------------------------------------------------
-    " FZF - fuzzy finder
-    "-------------------------------------------------------------------------------------------------
-    " if PlugLoaded("fzf.vim")
-    "   let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6 } }
-
-    "   " Ctrl-p fuzzy file finder
-    "   nmap <C-p> :Files<CR>
-
-    "   " Buffers
-    "   nmap <f1> :Buffers<cr>
-  
-    "   " Find in project
-    "   nmap <leader>f :Rg<space>
-    "   nmap <leader>F :Rg <C-R><C-W><CR>
-    " endif
 
     "-------------------------------------------------------------------------------------------------
     " vim-commentary - automatic commenting
@@ -332,6 +370,8 @@ EOF
       let g:prettier#quickfix_enabled = 1
       let g:prettier#config#print_width = '80'
       let g:prettier#config#tab_width = '2'
+
+      nmap <silent> <leader>p :PrettierAsync<cr>
     endif
     
     "-------------------------------------------------------------------------------------------------
@@ -488,75 +528,75 @@ EOF
     " nvim-compe
     "-------------------------------------------------------------------------------------------------
     if PlugLoaded("nvim-compe")
-    lua <<EOF
-      require'compe'.setup {
-        enabled = true;
-        autocomplete = true;
-        debug = false;
-        min_length = 1;
-        preselect = 'enable';
-        throttle_time = 80;
-        source_timeout = 200;
-        incomplete_delay = 400;
-        max_abbr_width = 100;
-        max_kind_width = 100;
-        max_menu_width = 100;
-        documentation = true;
-
-        source = {
-          path = true;
-          buffer = true;
-          calc = true;
-          nvim_lsp = true;
-          nvim_lua = true;
-          nvim_treesitter = true;
-          vsnip = false;
-          ultisnips = false;
-        };
-      }
-
-      local t = function(str)
-        return vim.api.nvim_replace_termcodes(str, true, true, true)
-      end
-
-      local check_back_space = function()
-          local col = vim.fn.col('.') - 1
-          if col == 0 or vim.fn.getline('.'):sub(col, col):match('%s') then
-              return true
+      lua <<EOF
+        require'compe'.setup {
+          enabled = true;
+          autocomplete = true;
+          debug = false;
+          min_length = 1;
+          preselect = 'enable';
+          throttle_time = 80;
+          source_timeout = 200;
+          incomplete_delay = 400;
+          max_abbr_width = 100;
+          max_kind_width = 100;
+          max_menu_width = 100;
+          documentation = true;
+  
+          source = {
+            path = true;
+            buffer = true;
+            calc = true;
+            nvim_lsp = true;
+            nvim_lua = true;
+            nvim_treesitter = true;
+            vsnip = false;
+            ultisnips = false;
+          };
+        }
+  
+        local t = function(str)
+          return vim.api.nvim_replace_termcodes(str, true, true, true)
+        end
+  
+        local check_back_space = function()
+            local col = vim.fn.col('.') - 1
+            if col == 0 or vim.fn.getline('.'):sub(col, col):match('%s') then
+                return true
+            else
+                return false
+            end
+        end
+  
+        -- Use (s-)tab to:
+        --- move to prev/next item in completion menuone
+        --- jump to prev/next snippet's placeholder
+        _G.tab_complete = function()
+          if vim.fn.pumvisible() == 1 then
+            return t "<C-n>"
+          --elseif vim.fn.call("vsnip#available", {1}) == 1 then
+          --  return t "<Plug>(vsnip-expand-or-jump)"
+          elseif check_back_space() then
+            return t "<Tab>"
           else
-              return false
+            return vim.fn['compe#complete']()
           end
-      end
-
-      -- Use (s-)tab to:
-      --- move to prev/next item in completion menuone
-      --- jump to prev/next snippet's placeholder
-      _G.tab_complete = function()
-        if vim.fn.pumvisible() == 1 then
-          return t "<C-n>"
-        --elseif vim.fn.call("vsnip#available", {1}) == 1 then
-        --  return t "<Plug>(vsnip-expand-or-jump)"
-        elseif check_back_space() then
-          return t "<Tab>"
-        else
-          return vim.fn['compe#complete']()
         end
-      end
-      _G.s_tab_complete = function()
-        if vim.fn.pumvisible() == 1 then
-          return t "<C-p>"
-        --elseif vim.fn.call("vsnip#jumpable", {-1}) == 1 then
-        --  return t "<Plug>(vsnip-jump-prev)"
-        else
-          -- If <S-Tab> is not working in your terminal, change it to <C-h>
-          return t "<S-Tab>"
+        _G.s_tab_complete = function()
+          if vim.fn.pumvisible() == 1 then
+            return t "<C-p>"
+          --elseif vim.fn.call("vsnip#jumpable", {-1}) == 1 then
+          --  return t "<Plug>(vsnip-jump-prev)"
+          else
+            -- If <S-Tab> is not working in your terminal, change it to <C-h>
+            return t "<S-Tab>"
+          end
         end
-      end
-
-      vim.api.nvim_set_keymap("i", "<Tab>", "v:lua.tab_complete()", {expr = true})
-      vim.api.nvim_set_keymap("s", "<Tab>", "v:lua.tab_complete()", {expr = true})
-      vim.api.nvim_set_keymap("i", "<S-Tab>", "v:lua.s_tab_complete()", {expr = true})
-      vim.api.nvim_set_keymap("s", "<S-Tab>", "v:lua.s_tab_complete()", {expr = true})
+  
+        vim.api.nvim_set_keymap("i", "<Tab>", "v:lua.tab_complete()", {expr = true})
+        vim.api.nvim_set_keymap("s", "<Tab>", "v:lua.tab_complete()", {expr = true})
+        vim.api.nvim_set_keymap("i", "<S-Tab>", "v:lua.s_tab_complete()", {expr = true})
+        vim.api.nvim_set_keymap("s", "<S-Tab>", "v:lua.s_tab_complete()", {expr = true})
 EOF
       inoremap <silent><expr> <C-Space> compe#complete()
       inoremap <silent><expr> <CR>      compe#confirm('<CR>')
@@ -640,36 +680,25 @@ EOF
     "-------------------------------------------------------------------------------------------------
     if exists('g:gnvim')
       set guifont=Cousine\ Nerd\ Font\ Regular:h10
-      let g:fzf_layout = { 'down': '~40%' }
     endif
 
   endif
  
-  "-------------------------------------------------------------------------------------------------
-  " WSL specific stuff
-  "-------------------------------------------------------------------------------------------------
-  function! IsWSL()
-    if has("unix") && filereadable("/proc/version")
-      let lines = readfile("/proc/version")
-      if lines[0] =~ "Microsoft"
-        return 1
-      endif
-    endif
-    return 0
-  endfunction
-  
-  if IsWSL()
-    let g:clipboard = {
-              \   'name': 'win32yank-wsl',
-              \   'copy': {
-              \      '+': 'win32yank.exe -i --crlf',
-              \      '*': 'win32yank.exe -i --crlf',
-              \    },
-              \   'paste': {
-              \      '+': 'win32yank.exe -o --lf',
-              \      '*': 'win32yank.exe -o --lf',
-              \   },
-              \   'cache_enabled': 0,
-              \ }
-  endif
+"-------------------------------------------------------------------------------------------------
+" VS Code specific key mappings
+"-------------------------------------------------------------------------------------------------
+else
+  " Commenting
+  nmap <leader>/ <Plug>VSCodeCommentaryLine
+  xmap <leader>/ <Plug>VSCodeCommentary
+
+  " File Explorer
+  nmap <leader>B :call VSCodeNotify('workbench.files.action.showActiveFileInExplorer')<cr>
+  nmap <leader>b :call VSCodeNotify('workbench.view.explorer')<cr>
+
+  " Toggle sidebar
+  nmap <bs> :call VSCodeNotify('workbench.action.toggleSidebarVisibility')<cr>
+
+  " Find in files
+  nmap <leader>f :call VSCodeNotify('workbench.action.findInFiles')<cr>
 endif
