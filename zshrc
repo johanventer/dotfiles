@@ -24,8 +24,8 @@ export DISPLAY=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2; exit;}
 export LIBGL_ALWAYS_INDIRECT=1
 
 ## Java
-export JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
-export ANT_HOME=/opt/apache-ant-1.10.11
+#export JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
+#export ANT_HOME=/opt/apache-ant-1.10.11
 
 ## Extra paths
 export PATH=~/bin:$HOME/.cargo/bin:$ANT_HOME/bin:/opt/sfdx/bin:/usr/local/go/bin:~/go/bin:$PATH
@@ -40,15 +40,15 @@ precmd_functions+=(set_win_title)
 ## NVM
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-## FZF
+# FZF
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 export FZF_DEFAULT_COMMAND='rg --files --hidden'
 
 ## Starship!
 eval "$(starship init zsh)"
 
-
-#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+export QT_STYLE_OVERRIDE=kvantum
