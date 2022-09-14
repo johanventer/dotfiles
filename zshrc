@@ -18,17 +18,22 @@ alias ls="ls --color=always"
 alias ll="ls -lash"
 alias vim="nvim"
 alias gnvim="GDK_DPI_SCALE=1.5 gnvim"
+alias fd="fdfind"
 
 ## X server
-export DISPLAY=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2; exit;}'):0.0
-export LIBGL_ALWAYS_INDIRECT=1
+#export DISPLAY=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2; exit;}'):0.0
+#export LIBGL_ALWAYS_INDIRECT=1
+
+# PulseAudio
+#export PULSE_HOST_IP="$(ip route |awk '/^default/{print $3}')"
+#export PULSE_SERVER="tcp:$PULSE_HOST_IP"
 
 ## Java
 #export JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
 #export ANT_HOME=/opt/apache-ant-1.10.11
 
 ## Extra paths
-export PATH=~/bin:$HOME/.cargo/bin:$ANT_HOME/bin:/opt/sfdx/bin:/usr/local/go/bin:~/go/bin:$PATH
+export PATH=$HOME/bin:$HOME/.local/bin:$HOME/.cargo/bin:$ANT_HOME/bin:/opt/sfdx/bin:/usr/local/go/bin:~/go/bin:$PATH
 
 # Set the window title
 function set_win_title() {
@@ -46,9 +51,16 @@ export NVM_DIR="$HOME/.nvm"
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 export FZF_DEFAULT_COMMAND='rg --files --hidden'
 
-## Starship!
-eval "$(starship init zsh)"
-
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
 export QT_STYLE_OVERRIDE=kvantum
+
+# Generated for envman. Do not edit.
+[ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
+
+# Zoxide
+eval "$(zoxide init zsh)"
+
+## Starship!
+eval "$(starship init zsh)"
+
